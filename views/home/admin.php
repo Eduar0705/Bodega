@@ -165,7 +165,7 @@ form:hover {
                         endif; 
                         ?>
                         <div class="card-infoo">
-                            <input type="text" id="dollar" name="dollar" value="<?= number_format(APP_Dollar,'2',',','.') ?>">
+                            <input type="text" id="dollar" name="dollar" value="<?= number_format(APP_Dollar,'2') ?>">
                             <button type="submit" id="uptade" name="uptade"> <i class="fas fa-check"></i> Actualizar</button>
                         </div>
                     </form>

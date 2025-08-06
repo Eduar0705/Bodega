@@ -4,6 +4,7 @@
                 <button class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
+                
                 <span class="logo"><?= APP_NAME ?></span>
             </div>
             <div class="navbar-right">

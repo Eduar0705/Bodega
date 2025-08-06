@@ -158,7 +158,6 @@ class AdminController
         $titulo = 'Punto de venta';
         $datos = $this->pos->obtenerDatos();
         $clientes = $this->clientes->obtenerUsuarios();
-
         require_once 'views/punto/index.php';
     }
     public function historial(){
