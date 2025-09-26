@@ -31,5 +31,5 @@ define('APP_NAME', $conf['NombreApp']);
 define('APP_Date',date('d/m/y'));
 define('APP_Password', $conf['Clave']);
 define('APP_Dollar',$conf['precio_dollar']);
-define('APP_Logo', 'public/img/Logo.jpg');
+define('APP_Logo', 'public/img/logo2.png');
 ?>

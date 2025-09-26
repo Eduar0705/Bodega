@@ -167,8 +167,8 @@ body {
 }
 
 .btn-search {
-    margin: var(--spacing-lg);
-    padding: var(--spacing-md);
+    margin: var(--spacing-md);
+    padding: var(--spacing-xs);
     background: rgba(84, 204, 28, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: var(--text-white);

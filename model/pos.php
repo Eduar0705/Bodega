@@ -52,62 +52,45 @@ class Pos {
     }
 
     // Procesar venta
-    public function procesarVenta($productos, $subtotal_dolares, $subtotal_bolivares, $cliente_nombre = null, $metodo_pago = 'contado') {
+    public function procesarVenta($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos) {
         $this->db->begin_transaction();
 
         try {
-            // Insertar en historial de ventas
-            $productos_json = json_encode($productos);
-            $fecha = date('Y-m-d H:i:s');
-
-            $sql_venta = "INSERT INTO historial (productos, subtotal_dolares, subtotal_bolivares, cliente_nombre, metodo_pago, fecha) 
-                            VALUES (?, ?, ?, ?, ?, ?)";
+            // Insertar la venta
+            $sql_venta = "INSERT INTO historial (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) 
+                        VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql_venta);
-            $stmt->bind_param('sddsss', $productos_json, $subtotal_dolares, $subtotal_bolivares, $cliente_nombre, $metodo_pago, $fecha);
+            
+            // Convertir productos a JSON
+            $productos_json = json_encode($productos);
+            $stmt->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
 
             if (!$stmt->execute()) {
-                throw new Exception('Error al registrar la venta');
+                throw new Exception('Error al registrar la venta: ' . $this->db->error);
             }
 
             $venta_id = $this->db->insert_id;
 
             // Si es a crédito, registrar en cuentas por cobrar
-            if ($metodo_pago === 'credito' && !empty($cliente_nombre)) {
-                $sql_credito = "INSERT INTO cuentas_por_cobrar (venta_id, cliente_nombre, monto_dolares, monto_bolivares, fecha, estado) 
-                                VALUES (?, ?, ?, ?, ?, 'pendiente')";
+            if ($tipo_pago === 'credito') {
+                $sql_credito = "INSERT INTO cuentascobrar (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) 
+                                VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt_credito = $this->db->prepare($sql_credito);
-                $stmt_credito->bind_param('isdds', $venta_id, $cliente_nombre, $subtotal_dolares, $subtotal_bolivares, $fecha);
+                $stmt_credito->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
 
                 if (!$stmt_credito->execute()) {
-                    throw new Exception('Error al registrar la cuenta por cobrar');
+                    throw new Exception('Error al registrar la cuenta por cobrar: ' . $this->db->error);
                 }
             }
 
-            // Validar stock y actualizar inventario
+            // Actualizar inventario
             foreach ($productos as $producto) {
-                // Verificar stock actual
-                $sql_check = "SELECT un_disponibles FROM inventario WHERE id = ?";
-                $stmt_check = $this->db->prepare($sql_check);
-                $stmt_check->bind_param('i', $producto['id']);
-                $stmt_check->execute();
-                $resultado_check = $stmt_check->get_result();
-
-                if ($resultado_check->num_rows === 0) {
-                    throw new Exception('Producto no encontrado: ' . $producto['nombre']);
-                }
-
-                $stock_actual = $resultado_check->fetch_assoc()['un_disponibles'];
-                if ($stock_actual < $producto['cantidad']) {
-                    throw new Exception('Stock insuficiente para: ' . $producto['nombre']);
-                }
-
-                // Actualizar stock
                 $sql_stock = "UPDATE inventario SET un_disponibles = un_disponibles - ? WHERE id = ?";
                 $stmt_stock = $this->db->prepare($sql_stock);
                 $stmt_stock->bind_param('ii', $producto['cantidad'], $producto['id']);
 
                 if (!$stmt_stock->execute()) {
-                    throw new Exception('Error al actualizar el stock de: ' . $producto['nombre']);
+                    throw new Exception('Error al actualizar el stock: ' . $this->db->error);
                 }
             }
 

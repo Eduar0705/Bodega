@@ -196,7 +196,7 @@ tbody tr:hover {
                                             class="btn btn-sm btn-danger btn-delete"
                                             id="btn-eliminar" 
                                             title="Eliminar cliente" 
-                                            data-id="<?php echo $info['id']; ?>">
+                                            data-id="<?php echo $info['id_historia']; ?>">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </td>

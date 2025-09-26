@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="public/css/admin.css">
+    <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
 </head>
 <style>
     /* Estilos generales para la sección de inventario */
@@ -125,6 +126,15 @@
 
     .btn-danger:hover {
         background-color: #c82333;
+    }
+
+    #importar {
+        background-color: #de1414ff;
+        color: white;
+    }
+
+    #importar:hover {
+        background-color: #7d1722ff;
     }
 
     /* Estilos para el mensaje cuando no hay datos */
@@ -279,6 +289,7 @@
                 <div class="bus">
                     <input type="text" id="buscar" name="buscar" placeholder="Ingrese el nombre o código del producto" onkeyup="filtrarProductos()">
                     <button name="add" id="add"><i class="fas fa-plus"></i> Agregar Producto</button>
+                    <button name="importar" id="importar"><i class="fas fa-file-import"></i> Importar PDF</button>
                 </div>
                 <div class="list-Product">
                     <table id="tablaProductos" style="background-color: aliceblue; max-width: 95%;">
@@ -288,7 +299,6 @@
                                 <th>Nombre</th>
                                 <th>Presentacion</th>
                                 <th>disponibles</th>
-                                <th>Precio Compra</th>
                                 <th>Precion Venta</th>
                                 <th>Total de Ganancia</th>
                                 <th>Acciones</th>
@@ -308,7 +318,6 @@
                                         <td><?php echo htmlspecialchars($dato['nombre']); ?></td>
                                         <td><?php echo htmlspecialchars($dato['medida']); ?></td>
                                         <td style="text-align: center;"><?php echo htmlspecialchars($dato['un_disponibles']); ?></td>
-                                        <td style="text-align: center;">$<?php echo number_format($dato['precio_compra'], 2,',','.'); ?></td>
                                         <td style="text-align: center;">$<?php echo number_format($dato['precio_venta'], 2,',','.'); ?></td>
                                         <td style="text-align: center; color: green;">$<?php echo number_format($totalGanacias, 2,',','.'); ?></td>
                                         <td>
@@ -446,6 +455,8 @@
         </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <!-- Funcion del modal de agregar -->
     <script>
         const modal = document.getElementById("productModal");
@@ -615,6 +626,78 @@
         const precioVenta = precioCompra * (1 + (porcentaje / 100));
         document.getElementById(`${prefix}SalePrice`).value = precioVenta.toFixed(2);
     }
+    </script>
+    <!-- Exportar a PDF -->
+    <script>
+        document.getElementById('importar').addEventListener('click', function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            
+            // Título del documento
+            const title = "Reporte del Inventario";
+            doc.setFontSize(18);
+            doc.text(title, 40, 40);
+            
+            // Obtener datos de la tabla
+            const table = document.getElementById('tablaProductos');
+            const headers = [];
+            const rows = [];
+            
+            table.querySelectorAll('thead th').forEach((th, index) => {
+                if(index < 6) {
+                    headers.push(th.textContent);
+                }
+            });
+            
+            // Obtener filas de datos
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                if(tr.querySelector('td[colspan]')) return;
+                
+                const row = [];
+                tr.querySelectorAll('td').forEach((td, index) => {
+                    if(index < 6) {
+                        let text = td.textContent.trim();
+                        if(index === 4 || index === 5) {
+                            text = text.replace('$', '').replace(/\./g, '').replace(',', '.');
+                            text = parseFloat(text).toFixed(2);
+                        }
+                        row.push(text);
+                    }
+                });
+                if(row.length > 0) rows.push(row);
+            });
+
+            const options = {
+                startY: 60,
+                head: [headers],
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [50, 150, 250],
+                    textColor: 255,
+                    fontStyle: 'bold'
+                },
+                columnStyles: {
+                    0: { cellWidth: 60 }, 
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 80 },
+                    3: { cellWidth: 60, halign: 'center' },
+                    4: { cellWidth: 70, halign: 'right' },
+                    5: { cellWidth: 80, halign: 'right' }
+                },
+                didDrawPage: function (data) {
+                    doc.setFontSize(10);
+                    const pageCount = doc.internal.getNumberOfPages();
+                    doc.text(`Página ${data.pageNumber} de ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 20);
+                    
+                    const fecha = new Date().toLocaleDateString();
+                    doc.text(`Generado el: ${fecha}`, doc.internal.pageSize.width - 120, doc.internal.pageSize.height - 20);
+                }
+            };
+            
+            doc.autoTable(options);
+            doc.save('Reporte_Inventario.pdf');
+        });
     </script>
 </body>
 </html>

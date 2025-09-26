@@ -154,12 +154,43 @@ class AdminController
     }
 
     //FUNCIONES DEL PUNTO DE VENTA
+
     public function punto(){
         $titulo = 'Punto de venta';
         $datos = $this->pos->obtenerDatos();
         $clientes = $this->clientes->obtenerUsuarios();
         require_once 'views/punto/index.php';
     }
+
+    public function confirmarVenta(){
+        header('Content-Type: application/json');
+        
+        try {
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+
+            //Variables para el envio a la base de datos
+            $fecha = $data['fecha'] ?? date('Y-m-d H:i:s');
+            $cliente = $data['cliente'] ?? 'Cliente no registrado';
+            $tipoPago = $data['tipo_pago'] ?? 'efectivo';
+            $tipoVenta = $data['tipo_venta'] ?? 'contado';
+            $totalUSD = floatval($data['total_usd'] ?? 0);
+            $productos =$data['productos'] ?? [];
+
+            // Procesar la venta
+            $resultado = $this->pos->procesarVenta($fecha,$cliente,$tipoPago,$tipoVenta,$totalUSD, $productos);
+
+            echo json_encode($resultado);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+
     public function historial(){
         $titulo = 'Historial de venta';
         $historial = $this->historial->obtenerHistorial();

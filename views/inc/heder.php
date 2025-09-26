@@ -1,4 +1,27 @@
-        <!-- Menú Superior -->
+<style>
+    .exit a {
+        color: #fff; 
+        text-decoration: none; 
+        font-size: 16px;
+        font-family: Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 8px; 
+        padding: 8px 12px;
+        background-color: #e74c3c; 
+        border-radius: 4px; 
+        transition: background-color 0.3s ease; 
+    }
+
+    .exit a:hover {
+        background-color: #c0392b;
+    }
+
+    .fas.fa-sign-out-alt {
+        font-size: 14px;
+    }
+</style>
+<!-- Menú Superior -->
         <nav class="navbar">
             <div class="navbar-left">
                 <button class="menu-toggle">
@@ -13,7 +36,7 @@
                         <span><?= $_SESSION['nombre'] ?></span>
                     </div>
                     <div class="exit">
-                        <a href="./"><i class="fas fa-sign-out-alt"></i> Salir</a>
+                        <a href="./"><i class="fas fa-sign-out-alt"></i></a>
                     </div>
                 </div>
             </div>
