@@ -53,54 +53,103 @@ class Pos {
 
     // Procesar venta
     public function procesarVenta($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos) {
-        $this->db->begin_transaction();
-
         try {
-            // Insertar la venta
-            $sql_venta = "INSERT INTO historial (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) 
-                        VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $this->db->prepare($sql_venta);
+            $this->db->begin_transaction();
             
-            // Convertir productos a JSON
-            $productos_json = json_encode($productos);
-            $stmt->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
-
-            if (!$stmt->execute()) {
-                throw new Exception('Error al registrar la venta: ' . $this->db->error);
+            // 1. Validar stock
+            foreach ($productos as $prod) {
+                if (!isset($prod['id']) || !isset($prod['cantidad'])) {
+                    throw new Exception('Datos de producto incompletos');
+                }
+                
+                $sqlCheck = "SELECT un_disponibles, nombre FROM inventario WHERE id_producto = ?";
+                $stmtCheck = $this->db->prepare($sqlCheck);
+                $stmtCheck->bind_param('i', $prod['id']);
+                $stmtCheck->execute();
+                $result = $stmtCheck->get_result();
+                
+                if ($result->num_rows === 0) {
+                    throw new Exception("Producto ID {$prod['id']} no existe");
+                }
+                
+                $row = $result->fetch_assoc();
+                if ($row['un_disponibles'] < $prod['cantidad']) {
+                    throw new Exception("Stock insuficiente para: {$row['nombre']}");
+                }
             }
-
+            
+            // 2. Convertir productos a JSON
+            $productos_json = json_encode($productos, JSON_UNESCAPED_UNICODE);
+            
+            // 3. Insertar en historial
+            $sqlHistorial = "INSERT INTO historial (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmtHistorial = $this->db->prepare($sqlHistorial);
+            
+            if (!$stmtHistorial) {
+                throw new Exception("Error preparando consulta historial: " . $this->db->error);
+            }
+            
+            $stmtHistorial->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
+            
+            if (!$stmtHistorial->execute()) {
+                throw new Exception("Error al registrar venta: " . $stmtHistorial->error);
+            }
+            
             $venta_id = $this->db->insert_id;
-
-            // Si es a crédito, registrar en cuentas por cobrar
+            
+            // 4. Si es crédito, insertar en cuentascobrar
             if ($tipo_pago === 'credito') {
-                $sql_credito = "INSERT INTO cuentascobrar (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) 
-                                VALUES (?, ?, ?, ?, ?, ?)";
-                $stmt_credito = $this->db->prepare($sql_credito);
-                $stmt_credito->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
-
-                if (!$stmt_credito->execute()) {
-                    throw new Exception('Error al registrar la cuenta por cobrar: ' . $this->db->error);
+                $sqlCredito = "INSERT INTO cuentascobrar (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) VALUES (?, ?, ?, ?, ?, ?)";
+                $stmtCredito = $this->db->prepare($sqlCredito);
+                
+                if (!$stmtCredito) {
+                    throw new Exception("Error preparando consulta crédito: " . $this->db->error);
+                }
+                
+                $stmtCredito->bind_param('ssssds', $fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
+                
+                if (!$stmtCredito->execute()) {
+                    throw new Exception("Error al registrar crédito: " . $stmtCredito->error);
                 }
             }
-
-            // Actualizar inventario
-            foreach ($productos as $producto) {
-                $sql_stock = "UPDATE inventario SET un_disponibles = un_disponibles - ? WHERE id = ?";
-                $stmt_stock = $this->db->prepare($sql_stock);
-                $stmt_stock->bind_param('ii', $producto['cantidad'], $producto['id']);
-
-                if (!$stmt_stock->execute()) {
-                    throw new Exception('Error al actualizar el stock: ' . $this->db->error);
+            
+            // 5. Actualizar inventario
+            $sqlUpdate = "UPDATE inventario SET un_disponibles = un_disponibles - ? WHERE id_producto = ?";
+            $stmtUpdate = $this->db->prepare($sqlUpdate);
+            
+            if (!$stmtUpdate) {
+                throw new Exception("Error preparando actualización inventario: " . $this->db->error);
+            }
+            
+            foreach ($productos as $prod) {
+                $stmtUpdate->bind_param('ii', $prod['cantidad'], $prod['id']);
+                
+                if (!$stmtUpdate->execute()) {
+                    throw new Exception("Error actualizando inventario: " . $stmtUpdate->error);
+                }
+                
+                if ($stmtUpdate->affected_rows === 0) {
+                    throw new Exception("Producto ID {$prod['id']} no se actualizó");
                 }
             }
-
+            
+            // 6. Confirmar transacción
             $this->db->commit();
-            return ['success' => true, 'venta_id' => $venta_id];
-
+            
+            return [
+                'success' => true, 
+                'venta_id' => $venta_id,
+                'message' => 'Venta procesada correctamente'
+            ];
+            
         } catch (Exception $e) {
             $this->db->rollback();
-            return ['success' => false, 'error' => $e->getMessage()];
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
+    
 }
 ?>

@@ -163,31 +163,57 @@ class AdminController
     }
 
     public function confirmarVenta(){
-        header('Content-Type: application/json');
+        // Limpiar cualquier output previo
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        header('Content-Type: application/json; charset=utf-8');
         
         try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new Exception('Método no permitido');
+            }
+            
             $input = file_get_contents('php://input');
             $data = json_decode($input, true);
-
-            //Variables para el envio a la base de datos
-            $fecha = $data['fecha'] ?? date('Y-m-d H:i:s');
-            $cliente = $data['cliente'] ?? 'Cliente no registrado';
-            $tipoPago = $data['tipo_pago'] ?? 'efectivo';
-            $tipoVenta = $data['tipo_venta'] ?? 'contado';
-            $totalUSD = floatval($data['total_usd'] ?? 0);
-            $productos =$data['productos'] ?? [];
-
-            // Procesar la venta
-            $resultado = $this->pos->procesarVenta($fecha,$cliente,$tipoPago,$tipoVenta,$totalUSD, $productos);
-
-            echo json_encode($resultado);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Datos JSON inválidos');
+            }
+            
+            // Validar campos requeridos
+            $required = ['fecha', 'cliente', 'tipo_pago', 'tipo_venta', 'total_usd', 'productos'];
+            foreach ($required as $field) {
+                if (!isset($data[$field])) {
+                    throw new Exception("Campo requerido: $field");
+                }
+            }
+            
+            if (!is_array($data['productos']) || empty($data['productos'])) {
+                throw new Exception('Debe incluir al menos un producto');
+            }
+            
+            // Procesar venta
+            $resultado = $this->pos->procesarVenta(
+                $data['fecha'],
+                $data['cliente'],
+                $data['tipo_pago'],
+                $data['tipo_venta'],
+                floatval($data['total_usd']),
+                $data['productos']
+            );
+            
+            echo json_encode($resultado, JSON_UNESCAPED_UNICODE);
             
         } catch (Exception $e) {
+            http_response_code(400);
             echo json_encode([
-                'success' => false,
+                'success' => false, 
                 'error' => $e->getMessage()
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
+        
         exit;
     }
 

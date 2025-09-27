@@ -941,54 +941,72 @@
             isProcessingPayment = true;
             showNotification('Procesando venta...', 'info');
             
-            try {
-                // Preparar los datos exactamente como los espera el backend
-                const ventaData = {
-                    fecha: datosVenta.fecha,
-                    cliente: datosVenta.cliente,
-                    tipo_pago: datosVenta.tipo_pago,
-                    tipo_venta: datosVenta.tipo_venta,
-                    total_usd: datosVenta.total_usd,
-                    productos: datosVenta.productos.map(p => ({
-                        id: p.id,
-                        nombre: p.nombre,
-                        codigo: p.codigo,
-                        cantidad: p.cantidad,
-                        precio_usd: p.precio_usd,
-                        medida: p.medida
-                    }))
-                };
-                console.log('Datos que se enviarán:', ventaData);
-                
-                return fetch('?action=method&admin=confirmarVenta', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(ventaData),
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            throw new Error(text || 'Error en la respuesta del servidor');
-                        });
+            const ventaData = {
+                fecha: datosVenta.fecha,
+                cliente: datosVenta.cliente,
+                tipo_pago: datosVenta.tipo_pago,
+                tipo_venta: datosVenta.tipo_venta,
+                total_usd: datosVenta.total_usd,
+                productos: datosVenta.productos.map(p => ({
+                    id: p.id,
+                    nombre: p.nombre,
+                    codigo: p.codigo,
+                    cantidad: p.cantidad,
+                    precio_usd: p.precio_usd,
+                    medida: p.medida
+                }))
+            };
+            
+            console.log('Enviando:', ventaData);
+            
+            return fetch('?action=admin&method=confirmarVenta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'  // Identificar como AJAX
+                },
+                body: JSON.stringify(ventaData),
+            })
+            .then(response => {
+                // Leer como texto primero para depurar
+                return response.text().then(text => {
+                    console.log('Respuesta raw:', text);
+                    
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Respuesta no válida del servidor');
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.success) {
-                        throw new Error(data.error || 'Error al procesar la venta');
-                    }
-                    return data;
                 });
-            } catch (error) {
-                console.error('Error al procesar la venta:', error);
+            })
+            .then(data => {
+                
+                
+                Swal.fire({
+                    title: '¡Venta exitosa!',
+                    text: 'La venta se procesó correctamente',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar'
+                }).then(() => {
+                    resetForm();
+                });
+                
+                return data;
+            })
+            .catch(error => {
+                console.log('Error:', error);
+                Swal.fire({
+                    title: 'Error al procesar',
+                    text: error.message,
+                    icon: 'error'
+                });
                 throw error;
-            } finally {
+            })
+            .finally(() => {
                 isProcessingPayment = false;
-            }
+            });
         }
-
+        
         function resetForm() {
             try {
                 cart = [];
