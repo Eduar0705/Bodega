@@ -1,4 +1,4 @@
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Variables CSS para facilitar el mantenimiento */
         :root {
@@ -238,9 +238,6 @@
     </style>
     <nav class="navbar">
         <div class="navbar-left">
-            <button class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
             <span class="logo"><?= APP_NAME ?></span>
         </div>
         <div class="navbar-right">
@@ -251,11 +248,7 @@
                     <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
                 </div>
                 <div class="user-dropdown" id="userDropdown">
-                    <a href="#">
-                        <i class="fas fa-user"></i>
-                        <span>Mi Perfil</span>
-                    </a>
-                    <a href="#">
+                    <a href="?action=admin&method=config">
                         <i class="fas fa-cog"></i>
                         <span>Configuración</span>
                     </a>
@@ -273,7 +266,7 @@
         <div class="sidebar-menu">
             <ul>
                 <li>
-                    <a href="?action=admin" class="active">
+                    <a href="?action=admin">
                         <i class="fas fa-home"></i>
                         <span>Inicio</span>
                     </a>
@@ -308,62 +301,6 @@
                         <span>Usuarios</span>
                     </a>
                 </li>
-                <li>
-                    <a href="?action=admin&method=config">
-                        <i class="fas fa-cog"></i>
-                        <span>Configuración</span>
-                    </a>
-                </li>
             </ul>
         </div>
     </aside>
-    <script>
-        // Funcionalidad para el menú lateral
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            mainContent.classList.toggle('expanded');
-            
-            // Cambiar ícono del botón
-            const icon = menuToggle.querySelector('i');
-            if (sidebar.classList.contains('collapsed')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-chevron-right');
-            } else {
-                icon.classList.remove('fa-chevron-right');
-                icon.classList.add('fa-bars');
-            }
-        });
-        
-        // Funcionalidad para el menú desplegable del usuario
-        const userProfile = document.getElementById('userProfile');
-        const userDropdown = document.getElementById('userDropdown');
-        
-        userProfile.addEventListener('click', function() {
-            userDropdown.classList.toggle('active');
-        });
-        
-        // Cerrar menú desplegable al hacer clic fuera de él
-        document.addEventListener('click', function(event) {
-            if (!userProfile.contains(event.target) && !userDropdown.contains(event.target)) {
-                userDropdown.classList.remove('active');
-            }
-        });
-        
-        // Funcionalidad para dispositivos móviles
-        function handleResize() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('expanded');
-            } else {
-                sidebar.classList.remove('collapsed');
-                mainContent.classList.remove('expanded');
-            }
-        }
-        
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Ejecutar al cargar la página
-    </script>

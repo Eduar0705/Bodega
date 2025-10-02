@@ -22,9 +22,7 @@ class Historial{
     public function addHistorial($cliente, $tipoPago, $tipoVenta, $totalUSD, $listProductos){
         $fecha = date('d/m/y');
         $jsonProductos = json_encode($listProductos);
-
         $sql = 'INSERT INTO historial(fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_venditos) VALUES ( ?, ?, ?, ?, ?, ?)';
-
     }
 }
 ?>

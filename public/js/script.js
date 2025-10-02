@@ -8,6 +8,4 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.toggle('collapsed');
         mainContent.classList.toggle('expanded');
     });
-    
-    // Aquí puedes agregar más funcionalidades según necesites
 });

@@ -8,6 +8,27 @@
     <link rel="stylesheet" href="public/css/admin.css">
 </head>
 <style>
+#btn-descontar, .btn-info {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+#btn-descontar:hover {
+    background-color: #c0392b;
+}
+
+.btn-info{
+    background-color: #7f8c8d;
+}
+.btn-info:hover{
+    background-color: #486466ff;
+}
 /* Estilos generales */
 .add, .viewsUser {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -40,7 +61,7 @@ tr.no-result {
     grid-column: span 2;
 }
 
-.add input[type="text"], #buscar {
+.add input[type="text"], #buscar, #fecha {
     padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -48,7 +69,7 @@ tr.no-result {
     transition: border-color 0.3s;
 }
 
-.add input[type="text"]:focus, #buscar:focus{
+.add input[type="text"]:focus, #buscar:focus, #fecha:focus{
     border-color: #3498db;
     outline: none;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -169,47 +190,47 @@ tbody tr:hover {
             <div class="viewsUser">
                 <h3><?= $titulo?></h3>
                 <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
+                <input type="date" name="fecha" id="fecha">
                 <table id="tabla-clientes">
                     <thead>
                         <tr>
                             <th>Nombre Cliente</th>
                             <th>Metodo de Pago</th>
-                            <th>Pago / Credito</th>
-                            <th>Monto Total $</th>
-                            <th>Productos Vendidos</th>
+                            <th>Total $</th>
+                            <th>Productos</th>
                             <th>Fecha</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <!-- <tbody>
-                        <?php //if(!empty($historial)): ?>
-                            <?php //foreach($historial as $info): ?>
+                    <tbody>
+                        <?php if(!empty($cuentas)): ?>
+                            <?php foreach($cuentas as $info): ?>
                                 <tr>
-                                    <td><?php //echo htmlspecialchars($info['cliente']); ?></td>
-                                    <td><?php //echo htmlspecialchars($info['tipo_pago']); ?></td>
-                                    <td><?php //echo htmlspecialchars($info['tipo_venta']); ?></td>
-                                    <td><?php //echo number_format($info['total_usd'],2,',','.'); ?></td>
-                                    <td><?php //echo htmlspecialchars($info['productos_vendidos']); ?></td>
-                                    <td><?php //echo htmlspecialchars($info['fecha']); ?></td>
+                                    <td><?php echo htmlspecialchars($info['cliente']); ?></td>
+                                    <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
+                                    <td><?php echo number_format($info['total_usd'],2,',','.'); ?></td>
                                     <td>
                                         <button 
-                                            class="btn btn-sm btn-primary"
-                                            id="btn-editar" 
-                                            title="Editar cliente" 
-                                            data-id="<?php //echo $info['id_CC']; ?>">
-                                            <i class="fas fa-edit"></i> Editar
+                                            class="btn btn-info btn-sm btn-productos" 
+                                            type="button"
+                                            data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
+                                            title="Ver productos vendidos">
+                                            <i class="fas fa-eye"></i> Ver
                                         </button>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($info['fecha']); ?></td>
+                                    <td>
                                         <button 
                                             class="btn btn-sm btn-warning"
                                             id="btn-descontar" 
                                             title="Descontar" 
-                                            data-id="<?php //echo $info['id_CC']; ?>">
-                                            <i class="fas fa-dollar"></i> Descontar
+                                            data-id="<?php echo $info['id_historial']; ?>">
+                                            - <i class="fas fa-dollar"></i>
                                         </button>
                                     </td>
                                 </tr>
-                            <?php //endforeach; ?>
-                        <?php //else: ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
                             <tr>
                                 <td colspan="8" style="text-align: center;">
                                     <div class="text-muted">
@@ -219,11 +240,48 @@ tbody tr:hover {
                                     </div>
                                 </td>
                             </tr>
-                        <?php //endif; ?>
-                    </tbody> -->
+                        <?php endif; ?>
+                    </tbody>
                 </table>
             </div>
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.btn-productos').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                let productosJson = btn.getAttribute('data-productos');
+                let productos;
+                try {
+                    productos = JSON.parse(productosJson);
+                } catch(e) {
+                    Swal.fire('Error', 'No se pudo leer los productos vendidos.', 'error');
+                    return;
+                }
+                if (!Array.isArray(productos) || productos.length === 0) {
+                    Swal.fire('Sin productos', 'No hay productos vendidos en este registro.', 'info');
+                    return;
+                }
+                let html = '<table style="width:800px;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
+                productos.forEach(function(p) {
+                    html += `<tr>
+                        <td>${p.nombre}</td>
+                        <td>${p.codigo}</td>
+                        <td>${p.medida}</td>
+                        <td>${p.cantidad}</td>
+                        <td>${parseFloat(p.precio_usd).toFixed(2)} $</td>
+                        <td>${parseFloat(p.cantidad * p.precio_usd).toFixed(2)} $</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                Swal.fire({
+                    title: 'Productos vendidos',
+                    html: html,
+                    width: 600,
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+    </script>
 </body>
 </html>

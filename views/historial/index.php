@@ -40,7 +40,7 @@ tr.no-result {
     grid-column: span 2;
 }
 
-.add input[type="text"], #buscar {
+.add input[type="text"], #buscar, #fecha {
     padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -48,7 +48,7 @@ tr.no-result {
     transition: border-color 0.3s;
 }
 
-.add input[type="text"]:focus, #buscar:focus{
+.add input[type="text"]:focus, #buscar:focus, #fecha:focus{
     border-color: #3498db;
     outline: none;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -105,7 +105,7 @@ tbody tr:hover {
 }
 
 /* Estilos para los botones */
-.btn-delete {
+.btn-delete, .btn-info {
     background-color: #e74c3c;
     color: white;
     border: none;
@@ -118,6 +118,13 @@ tbody tr:hover {
 
 .btn-delete:hover {
     background-color: #c0392b;
+}
+
+.btn-info{
+    background-color: #7f8c8d;
+}
+.btn-info:hover{
+    background-color: #486466ff;
 }
 
 /* Estilos para el mensaje de no hay usuarios */
@@ -169,16 +176,16 @@ tbody tr:hover {
             <div class="viewsUser">
                 <h3>Historial de ventas</h3>
                 <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
+                <input type="date" name="fecha" id="fecha">
                 <table id="tabla-clientes">
                     <thead>
                         <tr>
                             <th>Nombre Cliente</th>
                             <th>Metodo de Pago</th>
                             <th>Pago / Credito</th>
-                            <th>Monto Total $</th>
-                            <th>Productos Vendidos</th>
+                            <th>Total $</th>
+                            <th>Productos</th>
                             <th>Fecha</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -189,17 +196,16 @@ tbody tr:hover {
                                     <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
                                     <td><?php echo htmlspecialchars($info['tipo_venta']); ?></td>
                                     <td><?php echo number_format($info['total_usd'],2,',','.'); ?></td>
-                                    <td><?php //echo htmlspecialchars($info['productos_vendidos']); ?></td>
-                                    <td><?php echo htmlspecialchars($info['fecha']); ?></td>
                                     <td>
                                         <button 
-                                            class="btn btn-sm btn-danger btn-delete"
-                                            id="btn-eliminar" 
-                                            title="Eliminar cliente" 
-                                            data-id="<?php echo $info['id_historia']; ?>">
-                                            <i class="fas fa-trash-alt"></i>
+                                            class="btn btn-info btn-sm btn-productos" 
+                                            type="button"
+                                            data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
+                                            title="Ver productos vendidos">
+                                            <i class="fas fa-eye"></i> Ver
                                         </button>
                                     </td>
+                                    <td><?php echo htmlspecialchars($info['fecha']); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -218,5 +224,42 @@ tbody tr:hover {
             </div>
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.btn-productos').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                let productosJson = btn.getAttribute('data-productos');
+                let productos;
+                try {
+                    productos = JSON.parse(productosJson);
+                } catch(e) {
+                    Swal.fire('Error', 'No se pudo leer los productos vendidos.', 'error');
+                    return;
+                }
+                if (!Array.isArray(productos) || productos.length === 0) {
+                    Swal.fire('Sin productos', 'No hay productos vendidos en este registro.', 'info');
+                    return;
+                }
+                let html = '<table style="width:800px;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
+                productos.forEach(function(p) {
+                    html += `<tr>
+                        <td>${p.nombre}</td>
+                        <td>${p.codigo}</td>
+                        <td>${p.medida}</td>
+                        <td>${p.cantidad}</td>
+                        <td>${parseFloat(p.precio_usd).toFixed(2)} $</td>
+                        <td>${parseFloat(p.cantidad * p.precio_usd).toFixed(2)} $</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                Swal.fire({
+                    title: 'Productos vendidos',
+                    html: html,
+                    width: 600,
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+    </script>
 </body>
 </html>

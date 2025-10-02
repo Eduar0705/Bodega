@@ -939,7 +939,6 @@
 
         function enviarVentaAlServidor(datosVenta) {
             isProcessingPayment = true;
-            showNotification('Procesando venta...', 'info');
             
             const ventaData = {
                 fecha: datosVenta.fecha,
@@ -963,42 +962,52 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'  // Identificar como AJAX
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(ventaData),
             })
             .then(response => {
-                // Leer como texto primero para depurar
-                return response.text().then(text => {
-                    console.log('Respuesta raw:', text);
-                    
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        throw new Error('Respuesta no válida del servidor');
-                    }
-                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                console.log('Respuesta raw:', text);
+                
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Error parseando JSON:', text);
+                    throw new Error('Respuesta inválida del servidor');
+                }
             })
             .then(data => {
+                console.log('Respuesta parseada:', data);
                 
-                
-                Swal.fire({
-                    title: '¡Venta exitosa!',
-                    text: 'La venta se procesó correctamente',
-                    icon: 'success',
-                    confirmButtonText: 'Aceptar'
-                }).then(() => {
-                    resetForm();
-                });
-                
-                return data;
+                // VERIFICAR SI FUE EXITOSO
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Venta exitosa!',
+                        text: data.message || 'La venta se procesó correctamente',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    }).then(() => {
+                        resetForm();
+                    });
+                    return data;
+                } else {
+                    // ERROR DEL SERVIDOR
+                    throw new Error(data.error || 'Error desconocido al procesar la venta');
+                }
             })
             .catch(error => {
-                console.log('Error:', error);
+                console.log('Error completo:', error);
                 Swal.fire({
                     title: 'Error al procesar',
                     text: error.message,
-                    icon: 'error'
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
                 });
                 throw error;
             })
@@ -1006,7 +1015,7 @@
                 isProcessingPayment = false;
             });
         }
-        
+
         function resetForm() {
             try {
                 cart = [];

@@ -409,7 +409,7 @@
                             
                             <div class="form-group">
                                 <label for="editCode">Código:</label>
-                                <input type="text" id="editCode" name="codigo" required>
+                                <input type="text" id="editCode" pattern="[0-9]*" name="codigo" required>
                             </div>
                             
                             <div class="form-group">
@@ -466,6 +466,12 @@
         const purchasePrice = document.getElementById("purchasePrice");
         const profitPercentage = document.getElementById("profitPercentage");
         const salePrice = document.getElementById("salePrice");
+        const codigoProducto = document.getElementById('productCode');
+
+        // Config del input de codigo de producto que reciba solo numeros
+        codigoProducto.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
 
         // Abrir modal
         addBtn.addEventListener("click", function() {

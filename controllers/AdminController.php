@@ -6,6 +6,7 @@ require_once 'model/pos.php';
 require_once 'model/config.php';
 require_once 'model/usuarios.php';
 require_once 'model/historial.php';
+require_once 'model/ccobrar.php';
 
 class AdminController 
 {
@@ -16,6 +17,7 @@ class AdminController
     private $config;
     private $clientes;
     private $historial;
+    private $ccobrar;
     public function __construct() 
     {
         $this->iniciarSesion();
@@ -25,6 +27,8 @@ class AdminController
         $this->config = new Config();
         $this->clientes = new Usuarios();
         $this->historial = new Historial();
+        $this->ccobrar = new Ccobrar();
+
     }
     private function iniciarSesion()
     {
@@ -161,12 +165,12 @@ class AdminController
         $clientes = $this->clientes->obtenerUsuarios();
         require_once 'views/punto/index.php';
     }
-
     public function confirmarVenta(){
-        // Limpiar cualquier output previo
+        // Importante: limpiar buffers
         while (ob_get_level()) {
             ob_end_clean();
         }
+        ob_start();
         
         header('Content-Type: application/json; charset=utf-8');
         
@@ -175,18 +179,28 @@ class AdminController
                 throw new Exception('Método no permitido');
             }
             
+            // Verificar que sea AJAX
+            if (empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                throw new Exception('Acceso no permitido');
+            }
+            
             $input = file_get_contents('php://input');
+            
+            if (empty($input)) {
+                throw new Exception('No se recibieron datos');
+            }
+            
             $data = json_decode($input, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new Exception('Datos JSON inválidos');
+                throw new Exception('Datos JSON inválidos: ' . json_last_error_msg());
             }
             
             // Validar campos requeridos
             $required = ['fecha', 'cliente', 'tipo_pago', 'tipo_venta', 'total_usd', 'productos'];
             foreach ($required as $field) {
                 if (!isset($data[$field])) {
-                    throw new Exception("Campo requerido: $field");
+                    throw new Exception("Campo requerido faltante: $field");
                 }
             }
             
@@ -204,9 +218,12 @@ class AdminController
                 $data['productos']
             );
             
+            // Limpiar buffer y enviar respuesta
+            ob_end_clean();
             echo json_encode($resultado, JSON_UNESCAPED_UNICODE);
             
         } catch (Exception $e) {
+            ob_end_clean();
             http_response_code(400);
             echo json_encode([
                 'success' => false, 
@@ -224,6 +241,7 @@ class AdminController
     }
     public function cuentas(){
         $titulo = 'Cuentas por cobrar';
+        $cuentas = $this->ccobrar->obtenerCC();
         require_once 'views/cuentas/index.php';
     }
 
