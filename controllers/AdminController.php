@@ -289,6 +289,66 @@ class AdminController
     //Funcion de configuracion
     public function config(){
         $titulo = 'Configuracion';
+        
+        // Actualizar nombre de la aplicación
+        if(isset($_POST['uptade'])){
+            $nombre = trim($_POST['nombre']);
+            $resultado = $this->config->updateNombre($nombre);
+            
+            $_SESSION['mensaje'] = $resultado['message'];
+            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+            
+            header('Location: ?action=admin&method=config');
+            exit();
+        }
+        
+        // Cambiar clave maestra
+        if(isset($_POST['cambiar_clave'])){
+            $actual = trim($_POST['clave_actual']);
+            $nueva = trim($_POST['clave_nueva']);
+            $confirmar = trim($_POST['confirmar_clave']);
+
+            // Validar que las claves coincidan
+            if($nueva !== $confirmar){
+                $_SESSION['mensaje'] = 'Las claves no coinciden';
+                $_SESSION['tipo_mensaje'] = 'error';
+                header('Location: ?action=admin&method=config');
+                exit();
+            }
+
+            // Verificar la clave actual con la constante APP_Password
+            if($actual !== APP_Password){
+                $_SESSION['mensaje'] = 'La clave actual es incorrecta';
+                $_SESSION['tipo_mensaje'] = 'error';
+                header('Location: ?action=admin&method=config');
+                exit();
+            }
+
+            // Actualizar la clave
+            $resultado = $this->config->updateClave($nueva);
+            
+            $_SESSION['mensaje'] = $resultado['message'];
+            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+            
+            header('Location: ?action=admin&method=config');
+            exit();
+        }
+
+        // Agregar nuevo usuario administrativo
+        if(isset($_POST['agregar_usuario'])){
+            $nombre = trim($_POST['nombre']);
+            $cedula = trim($_POST['cedula']);
+            $clave = trim($_POST['clave_usuario']);
+            $id_cargo = (int)$_POST['id_cargo'];
+
+            if ($this->config->addUsuario($cedula, $nombre, $clave, $id_cargo)) {
+                header('Location: ?action=admin&method=config&mensaje=exito');
+                exit();
+            } else {
+                echo '<script>alert("Error al agregar el usuario. Intente nuevamente.")</script>';
+            }
+        }
+        
         require_once 'views/conf/index.php';
     }
 }

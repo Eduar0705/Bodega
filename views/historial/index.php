@@ -25,8 +25,18 @@ h3 {
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
 }
+
 tr.no-result {
     display: none;
+}
+
+/* NUEVO: Contenedor de filtros */
+.filter-section {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 /* Estilos para el formulario */
@@ -40,15 +50,17 @@ tr.no-result {
     grid-column: span 2;
 }
 
-.add input[type="text"], #buscar, #fecha {
+.add input[type="text"], #buscar, #fechaInicio, #fechaFin {
     padding: 10px 15px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.3s;
+    flex: 1;
+    min-width: 150px;
 }
 
-.add input[type="text"]:focus, #buscar:focus, #fecha:focus{
+.add input[type="text"]:focus, #buscar:focus, #fechaInicio:focus, #fechaFin:focus {
     border-color: #3498db;
     outline: none;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -72,6 +84,22 @@ tr.no-result {
 
 #btn-add:hover {
     background-color: #2980b9;
+}
+
+/* NUEVO: Botón limpiar */
+.btn-limpiar {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-limpiar:hover {
+    background-color: #7f8c8d;
 }
 
 /* Estilos para la tabla */
@@ -120,10 +148,11 @@ tbody tr:hover {
     background-color: #c0392b;
 }
 
-.btn-info{
+.btn-info {
     background-color: #7f8c8d;
 }
-.btn-info:hover{
+
+.btn-info:hover {
     background-color: #486466ff;
 }
 
@@ -159,6 +188,14 @@ tbody tr:hover {
         grid-column: span 1;
     }
     
+    .filter-section {
+        flex-direction: column;
+    }
+    
+    #buscar, #fechaInicio, #fechaFin {
+        width: 100%;
+    }
+    
     table {
         display: block;
         overflow-x: auto;
@@ -172,11 +209,21 @@ tbody tr:hover {
             <div class="page-header">
                 <h1><?= $titulo ?></h1>
                 <h4>Hoy es: <?= APP_Date ?> </h4>
+            </div>
             
             <div class="viewsUser">
                 <h3>Historial de ventas</h3>
-                <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
-                <input type="date" name="fecha" id="fecha">
+                
+                <!-- NUEVO: Sección de filtros -->
+                <div class="filter-section">
+                    <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
+                    <input type="date" name="fechaInicio" id="fechaInicio" placeholder="Fecha Inicio">
+                    <input type="date" name="fechaFin" id="fechaFin" placeholder="Fecha Fin">
+                    <button class="btn-limpiar" id="btn-limpiar">
+                        <i class="fas fa-times"></i> Limpiar
+                    </button>
+                </div>
+                
                 <table id="tabla-clientes">
                     <thead>
                         <tr>
@@ -210,11 +257,11 @@ tbody tr:hover {
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="8" style="text-align: center;">
+                                <td colspan="6" style="text-align: center;">
                                     <div class="text-muted">
                                         <i class="fas fa-boxes fa-3x mb-3"></i>
                                         <h5>No hay Historial de Ventas</h5>
-                                        <p>No se encontro un historial registrados.</p>
+                                        <p>No se encontró un historial registrado.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -224,7 +271,10 @@ tbody tr:hover {
             </div>
         </main>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Script para ver productos -->
     <script>
         document.querySelectorAll('.btn-productos').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -240,7 +290,7 @@ tbody tr:hover {
                     Swal.fire('Sin productos', 'No hay productos vendidos en este registro.', 'info');
                     return;
                 }
-                let html = '<table style="width:800px;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
+                let html = '<table style="width:100%;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
                 productos.forEach(function(p) {
                     html += `<tr>
                         <td>${p.nombre}</td>
@@ -259,6 +309,91 @@ tbody tr:hover {
                     confirmButtonText: 'Cerrar'
                 });
             });
+        });
+    </script>
+
+    <!-- NUEVO: Script de búsqueda y filtros -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let buscarInput = document.getElementById('buscar');
+            let fechaInicioInput = document.getElementById('fechaInicio');
+            let fechaFinInput = document.getElementById('fechaFin');
+            let btnLimpiar = document.getElementById('btn-limpiar');
+            let tabla = document.getElementById('tabla-clientes');
+            let filas = tabla.querySelectorAll('tbody tr');
+            
+            function filtrarTabla() {
+                const textoBusqueda = buscarInput.value.toLowerCase().trim();
+                const fechaInicio = fechaInicioInput.value;
+                const fechaFin = fechaFinInput.value;
+                let resultadosVisibles = false;
+                
+                filas.forEach(fila => {
+                    // Evitar procesar fila de "no hay datos"
+                    if (fila.querySelector('.text-muted')) {
+                        return;
+                    }
+                    
+                    const celdas = fila.querySelectorAll('td');
+                    const nombreCliente = celdas[0].textContent.toLowerCase();
+                    const fechaVenta = celdas[5].textContent.trim(); // La fecha está en la columna 6
+                    
+                    let coincide = true;
+                    
+                    // Filtrar por nombre
+                    if (textoBusqueda !== '') {
+                        coincide = nombreCliente.includes(textoBusqueda);
+                    }
+                    
+                    // Filtrar por rango de fechas
+                    if (coincide && fechaInicio && fechaFin) {
+                        const fecha = new Date(fechaVenta);
+                        const inicio = new Date(fechaInicio);
+                        const fin = new Date(fechaFin);
+                        coincide = (fecha >= inicio && fecha <= fin);
+                    }
+
+                    fila.style.display = coincide ? '' : 'none';
+                    if (coincide) resultadosVisibles = true;
+                });
+                
+                // Manejar mensaje de no resultados
+                const mensajeExistente = tabla.querySelector('#mensaje-no-resultados');
+                const tbody = tabla.querySelector('tbody');
+                
+                if (!resultadosVisibles && (textoBusqueda !== '' || (fechaInicio && fechaFin))) {
+                    if (!mensajeExistente) {
+                        const tr = document.createElement('tr');
+                        tr.id = 'mensaje-no-resultados';
+                        tr.innerHTML = `
+                            <td colspan="6" style="text-align: center;">
+                                <div class="text-muted">
+                                    <i class="fas fa-search fa-3x mb-3"></i>
+                                    <h5>No se encontraron resultados</h5>
+                                    <p>No hay registros que coincidan con los filtros aplicados</p>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    }
+                } else if (mensajeExistente) {
+                    mensajeExistente.remove();
+                }
+            }
+
+            // Función para limpiar filtros
+            function limpiarFiltros() {
+                buscarInput.value = '';
+                fechaInicioInput.value = '';
+                fechaFinInput.value = '';
+                filtrarTabla();
+            }
+
+            // Agregar eventos
+            buscarInput.addEventListener('input', filtrarTabla);
+            fechaInicioInput.addEventListener('change', filtrarTabla);
+            fechaFinInput.addEventListener('change', filtrarTabla);
+            btnLimpiar.addEventListener('click', limpiarFiltros);
         });
     </script>
 </body>

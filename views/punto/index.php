@@ -1380,7 +1380,6 @@
                 e.returnValue = 'Tienes productos en el carrito. ¿Estás seguro de salir?';
             }
         });
-
         console.log('🚀 Sistema POS inicializado correctamente');
     </script>
 </body>
