@@ -6,9 +6,35 @@
     <title><?= APP_NAME ?? 'Inicio' ?> - <?= $titulo ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="public/css/admin.css">
+    <link rel="shortcut icon" href="<?= APP_Logo?>" type="image/x-icon">
 </head>
 <style>
-/* CORREGIDO: Cambié #btn-descontar por clase */
+/* Estilos para badges de estado */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-pendiente {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.badge-parcial {
+    background-color: #f39c12;
+    color: white;
+}
+
+.badge-pagado {
+    background-color: #27ae60;
+    color: white;
+}
+
+/* Botones de acción */
 .btn-descontar, .btn-info {
     background-color: #e74c3c;
     color: white;
@@ -17,21 +43,22 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 
 .btn-descontar:hover {
     background-color: #c0392b;
+    transform: translateY(-2px);
 }
 
-.btn-info{
+.btn-info {
     background-color: #7f8c8d;
 }
-.btn-info:hover{
+
+.btn-info:hover {
     background-color: #486466ff;
 }
 
-/* NUEVO: Estilos para botón limpiar */
 .btn-limpiar {
     background-color: #95a5a6;
     color: white;
@@ -51,7 +78,7 @@
 /* Estilos generales */
 .add, .viewsUser {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
     background-color: #fff;
@@ -65,28 +92,14 @@ h3 {
     padding-bottom: 10px;
     border-bottom: 1px solid #eee;
 }
-tr.no-result {
-    display: none;
-}
 
-/* NUEVO: Contenedor de filtros */
+/* Contenedor de filtros */
 .filter-section {
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     align-items: center;
-}
-
-/* Estilos para el formulario */
-.add form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.add form h3 {
-    grid-column: span 2;
 }
 
 .add input[type="text"], #buscar, #fechaInicio, #fechaFin {
@@ -101,26 +114,6 @@ tr.no-result {
     border-color: #3498db;
     outline: none;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-#btn-add {
-    grid-column: span 2;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-#btn-add:hover {
-    background-color: #2980b9;
 }
 
 /* Estilos para la tabla */
@@ -151,25 +144,16 @@ th {
 
 tbody tr:hover {
     background-color: #f5f5f5;
+    transition: background-color 0.2s;
 }
 
-/* Estilos para los botones */
-.btn-delete {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s;
+/* Fila con estado */
+tbody tr.pagado {
+    opacity: 0.6;
+    background-color: #d5f4e6;
 }
 
-.btn-delete:hover {
-    background-color: #c0392b;
-}
-
-/* Estilos para el mensaje de no hay usuarios */
+/* Estilos para el mensaje de no hay datos */
 .text-muted {
     color: #7f8c8d;
     text-align: center;
@@ -190,24 +174,43 @@ tbody tr:hover {
     font-size: 14px;
 }
 
+/* Loading spinner */
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
-    .add form {
-        grid-template-columns: 1fr;
-    }
-    
-    .add form h3,
-    #btn-add {
-        grid-column: span 1;
-    }
-    
     .filter-section {
         flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-section input,
+    .filter-section button {
+        width: 100%;
+        margin-left: 0 !important;
     }
     
     table {
         display: block;
         overflow-x: auto;
+        font-size: 12px;
+    }
+    
+    th, td {
+        padding: 8px 10px;
     }
 }
 </style>
@@ -223,11 +226,11 @@ tbody tr:hover {
             <div class="viewsUser">
                 <h3><?= $titulo?></h3>
                 
-                <!-- CORREGIDO: Estructura de filtros mejorada -->
+                <!-- Filtros -->
                 <div class="filter-section">
-                    <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
-                    <input type="date" name="fechaInicio" id="fechaInicio">
-                    <input type="date" name="fechaFin" id="fechaFin">
+                    <input type="text" id="buscar" name="buscar" placeholder="🔍 Buscar por nombre" class="search-input">
+                    <input type="date" name="fechaInicio" id="fechaInicio" title="Fecha desde">
+                    <input type="date" name="fechaFin" id="fechaFin" title="Fecha hasta">
                     <button class="btn-limpiar" id="btn-limpiar">
                         <i class="fas fa-times"></i> Limpiar
                     </button>
@@ -238,7 +241,8 @@ tbody tr:hover {
                     <thead>
                         <tr>
                             <th>Nombre Cliente</th>
-                            <th>Metodo de Pago</th>
+                            <th>Estado</th>
+                            <th>Método de Pago</th>
                             <th>Total $</th>
                             <th>Productos</th>
                             <th>Fecha</th>
@@ -248,10 +252,34 @@ tbody tr:hover {
                     <tbody>
                         <?php if(!empty($cuentas)): ?>
                             <?php foreach($cuentas as $info): ?>
-                                <tr>
+                                <?php 
+                                    $total = floatval($info['total_usd']);
+                                    $estado = 'pendiente';
+                                    $estadoTexto = 'Pendiente';
+                                    $claseFila = '';
+                                    
+                                    if (isset($info['tipo_venta'])) {
+                                        if ($info['tipo_venta'] === 'pagado' || $total <= 0) {
+                                            $estado = 'pagado';
+                                            $estadoTexto = 'Pagado';
+                                            $claseFila = 'pagado';
+                                        } elseif ($info['tipo_venta'] === 'parcial') {
+                                            $estado = 'parcial';
+                                            $estadoTexto = 'Parcial';
+                                        }
+                                    }
+                                ?>
+                                <tr class="<?= $claseFila ?>" data-total="<?= $total ?>">
                                     <td><?php echo htmlspecialchars($info['cliente']); ?></td>
+                                    <td>
+                                        <span class="badge badge-<?= $estado ?>">
+                                            <?= $estadoTexto ?>
+                                        </span>
+                                    </td>
                                     <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
-                                    <td><?php echo number_format($info['total_usd'],2,',','.'); ?></td>
+                                    <td data-valor="<?= $total ?>">
+                                        $<?php echo number_format($total, 2, '.', ','); ?>
+                                    </td>
                                     <td>
                                         <button 
                                             class="btn btn-info btn-sm btn-productos" 
@@ -263,23 +291,30 @@ tbody tr:hover {
                                     </td>
                                     <td><?php echo htmlspecialchars($info['fecha']); ?></td>
                                     <td>
-                                        <!-- CORREGIDO: Cambié id por class -->
-                                        <button 
-                                            class="btn btn-sm btn-warning btn-descontar"
-                                            title="Descontar" 
-                                            data-id="<?php echo $info['id_historial']; ?>">
-                                            - <i class="fas fa-dollar"></i>
-                                        </button>
+                                        <?php if ($total > 0): ?>
+                                            <button 
+                                                class="btn btn-sm btn-warning btn-descontar"
+                                                title="Registrar pago" 
+                                                data-id="<?php echo $info['id_historial']; ?>"
+                                                data-monto="<?php echo $total; ?>"
+                                                data-cliente="<?php echo htmlspecialchars($info['cliente']); ?>">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </button>
+                                        <?php else: ?>
+                                            <span class="text-muted" title="Cuenta saldada">
+                                                <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" style="text-align: center;">
+                                <td colspan="7" style="text-align: center;">
                                     <div class="text-muted">
-                                        <i class="fas fa-boxes fa-3x mb-3"></i>
-                                        <h5>No hay Historial de Ventas</h5>
-                                        <p>No se encontró un historial registrado.</p>
+                                        <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                                        <h5>No hay Cuentas por Cobrar</h5>
+                                        <p>No se encontraron cuentas pendientes registradas.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -298,76 +333,166 @@ tbody tr:hover {
             btn.addEventListener('click', function() {
                 let productosJson = btn.getAttribute('data-productos');
                 let productos;
+                
                 try {
                     productos = JSON.parse(productosJson);
                 } catch(e) {
-                    Swal.fire('Error', 'No se pudo leer los productos vendidos.', 'error');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo leer los productos vendidos.'
+                    });
                     return;
                 }
+                
                 if (!Array.isArray(productos) || productos.length === 0) {
-                    Swal.fire('Sin productos', 'No hay productos vendidos en este registro.', 'info');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin productos',
+                        text: 'No hay productos vendidos en este registro.'
+                    });
                     return;
                 }
-                let html = '<table style="width:100%;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
+                
+                let html = `
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table style="width:100%; border-collapse: collapse;">
+                            <thead style="position: sticky; top: 0; background: #f8f9fa;">
+                                <tr style="border-bottom: 2px solid #ddd;">
+                                    <th style="padding: 10px; text-align: left;">Nombre</th>
+                                    <th style="padding: 10px; text-align: left;">Código</th>
+                                    <th style="padding: 10px; text-align: center;">Cantidad</th>
+                                    <th style="padding: 10px; text-align: right;">Precio</th>
+                                    <th style="padding: 10px; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                let totalGeneral = 0;
                 productos.forEach(function(p) {
-                    html += `<tr>
-                        <td>${p.nombre}</td>
-                        <td>${p.codigo}</td>
-                        <td>${p.medida}</td>
-                        <td>${p.cantidad}</td>
-                        <td>${parseFloat(p.precio_usd).toFixed(2)} $</td>
-                        <td>${parseFloat(p.cantidad * p.precio_usd).toFixed(2)} $</td>
-                    </tr>`;
+                    const totalProducto = parseFloat(p.cantidad * p.precio_usd);
+                    totalGeneral += totalProducto;
+                    
+                    html += `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 8px;">${p.nombre}</td>
+                            <td style="padding: 8px;">${p.codigo}</td>
+                            <td style="padding: 8px; text-align: center;">${p.cantidad} ${p.medida || ''}</td>
+                            <td style="padding: 8px; text-align: right;">$${parseFloat(p.precio_usd).toFixed(2)}</td>
+                            <td style="padding: 8px; text-align: right; font-weight: bold;">$${totalProducto.toFixed(2)}</td>
+                        </tr>
+                    `;
                 });
-                html += '</tbody></table>';
+                
+                html += `
+                            </tbody>
+                            <tfoot style="border-top: 2px solid #ddd;">
+                                <tr>
+                                    <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL:</td>
+                                    <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">$${totalGeneral.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                
                 Swal.fire({
-                    title: 'Productos vendidos',
+                    title: 'Productos Vendidos',
                     html: html,
-                    width: 600,
-                    confirmButtonText: 'Cerrar'
+                    width: 700,
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#3498db'
                 });
             });
         });
     </script>
 
-    <!-- NUEVO: Script para botón descontar -->
+    <!-- Script para botón descontar -->
     <script>
         document.querySelectorAll('.btn-descontar').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const idHistorial = this.getAttribute('data-id');
+                const montoTotal = parseFloat(this.getAttribute('data-monto'));
+                const nombreCliente = this.getAttribute('data-cliente');
                 
                 Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¿Deseas descontar esta venta?",
-                    icon: 'warning',
+                    title: 'Registrar Pago',
+                    html: `
+                        <div style="text-align: left; margin: 20px 0;">
+                            <p style="margin: 10px 0;"><strong>Cliente:</strong> ${nombreCliente}</p>
+                            <p style="margin: 10px 0;"><strong>Saldo pendiente:</strong> <span style="color: #e74c3c; font-size: 20px; font-weight: bold;">$${montoTotal.toFixed(2)}</span></p>
+                        </div>
+                    `,
+                    input: 'number',
+                    inputLabel: 'Monto a registrar',
+                    inputPlaceholder: `Ingrese el monto (máximo: $${montoTotal.toFixed(2)})`,
+                    inputValue: montoTotal.toFixed(2),
+                    inputAttributes: {
+                        min: 0.01,
+                        max: montoTotal,
+                        step: '0.01'
+                    },
                     showCancelButton: true,
-                    confirmButtonColor: '#3498db',
-                    cancelButtonColor: '#e74c3c',
-                    confirmButtonText: 'Sí, descontar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Aquí debes hacer la petición AJAX a tu backend
-                        // Ejemplo:
-                        fetch('ruta/a/tu/controlador/descontar.php', {
+                    confirmButtonText: '<i class="fas fa-check"></i> Registrar Pago',
+                    cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                    confirmButtonColor: '#27ae60',
+                    cancelButtonColor: '#95a5a6',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (monto) => {
+                        const montoNum = parseFloat(monto);
+                        
+                        if (!monto || montoNum <= 0) {
+                            Swal.showValidationMessage('Ingrese un monto válido mayor a 0');
+                            return false;
+                        }
+                        
+                        if (montoNum > montoTotal) {
+                            Swal.showValidationMessage(`El monto no puede ser mayor a $${montoTotal.toFixed(2)}`);
+                            return false;
+                        }
+                        
+                        // Realizar el fetch
+                        return fetch('?action=admin&method=descontarMonto', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ id_historial: idHistorial })
+                            body: JSON.stringify({ 
+                                id_historial: idHistorial,
+                                monto: montoNum
+                            })
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            if(data.success) {
-                                Swal.fire('¡Descontado!', 'La venta ha sido descontada.', 'success')
-                                .then(() => location.reload());
-                            } else {
-                                Swal.fire('Error', data.message || 'No se pudo descontar', 'error');
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la respuesta del servidor');
                             }
+                            return response.json();
                         })
                         .catch(error => {
-                            Swal.fire('Error', 'Ocurrió un error al procesar la solicitud', 'error');
+                            Swal.showValidationMessage(`Error: ${error.message || 'No se pudo conectar con el servidor'}`);
                         });
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        if (result.value.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Pago Registrado!',
+                                text: result.value.message,
+                                confirmButtonColor: '#27ae60'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.value.message || 'No se pudo procesar el pago',
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
                     }
                 });
             });
@@ -377,12 +502,23 @@ tbody tr:hover {
     <!-- Script de búsqueda y filtros -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let buscarInput = document.getElementById('buscar');
-            let fechaInicioInput = document.getElementById('fechaInicio');
-            let fechaFinInput = document.getElementById('fechaFin');
-            let btnLimpiar = document.getElementById('btn-limpiar');
-            let tabla = document.getElementById('tabla-clientes');
-            let filas = tabla.querySelectorAll('tbody tr');
+            const buscarInput = document.getElementById('buscar');
+            const fechaInicioInput = document.getElementById('fechaInicio');
+            const fechaFinInput = document.getElementById('fechaFin');
+            const btnLimpiar = document.getElementById('btn-limpiar');
+            const tabla = document.getElementById('tabla-clientes');
+            const filas = tabla.querySelectorAll('tbody tr:not(.no-data)');
+            
+            // Función para normalizar fechas (convierte DD/MM/YYYY o YYYY-MM-DD a objeto Date)
+            function normalizarFecha(fechaStr) {
+                // Si está en formato DD/MM/YYYY
+                if (fechaStr.includes('/')) {
+                    const partes = fechaStr.split('/');
+                    return new Date(partes[2], partes[1] - 1, partes[0]);
+                }
+                // Si está en formato YYYY-MM-DD
+                return new Date(fechaStr);
+            }
             
             function buscarClientes() {
                 const textoBusqueda = buscarInput.value.toLowerCase().trim();
@@ -398,7 +534,7 @@ tbody tr:hover {
                     
                     const celdas = fila.querySelectorAll('td');
                     const nombreCliente = celdas[0].textContent.toLowerCase();
-                    const fechaCliente = celdas[4].textContent.trim();
+                    const fechaCliente = celdas[5].textContent.trim(); // Columna de fecha (ajustada a índice 5)
                     
                     let coincide = true;
                     
@@ -408,11 +544,22 @@ tbody tr:hover {
                     }
                     
                     // Filtrar por rango de fechas
-                    if (coincide && fechaInicio && fechaFin) {
-                        const fecha = new Date(fechaCliente);
-                        const inicio = new Date(fechaInicio);
-                        const fin = new Date(fechaFin);
-                        coincide = (fecha >= inicio && fecha <= fin);
+                    if (coincide && (fechaInicio || fechaFin)) {
+                        const fecha = normalizarFecha(fechaCliente);
+                        
+                        if (fechaInicio && fechaFin) {
+                            const inicio = new Date(fechaInicio);
+                            const fin = new Date(fechaFin);
+                            fin.setHours(23, 59, 59); // Incluir todo el día final
+                            coincide = (fecha >= inicio && fecha <= fin);
+                        } else if (fechaInicio) {
+                            const inicio = new Date(fechaInicio);
+                            coincide = fecha >= inicio;
+                        } else if (fechaFin) {
+                            const fin = new Date(fechaFin);
+                            fin.setHours(23, 59, 59);
+                            coincide = fecha <= fin;
+                        }
                     }
 
                     fila.style.display = coincide ? '' : 'none';
@@ -423,12 +570,12 @@ tbody tr:hover {
                 const mensajeExistente = tabla.querySelector('#mensaje-no-resultados');
                 const tbody = tabla.querySelector('tbody');
                 
-                if (!resultadosVisibles && (textoBusqueda !== '' || (fechaInicio && fechaFin))) {
+                if (!resultadosVisibles && (textoBusqueda !== '' || fechaInicio || fechaFin)) {
                     if (!mensajeExistente) {
                         const tr = document.createElement('tr');
                         tr.id = 'mensaje-no-resultados';
                         tr.innerHTML = `
-                            <td colspan="6" style="text-align: center;">
+                            <td colspan="7" style="text-align: center;">
                                 <div class="text-muted">
                                     <i class="fas fa-search fa-3x mb-3"></i>
                                     <h5>No se encontraron resultados</h5>
@@ -443,7 +590,6 @@ tbody tr:hover {
                 }
             }
 
-            // NUEVO: Función para limpiar filtros
             function limpiarFiltros() {
                 buscarInput.value = '';
                 fechaInicioInput.value = '';
@@ -451,7 +597,7 @@ tbody tr:hover {
                 buscarClientes();
             }
 
-            // Agregar eventos
+            // Eventos
             buscarInput.addEventListener('input', buscarClientes);
             fechaInicioInput.addEventListener('change', buscarClientes);
             fechaFinInput.addEventListener('change', buscarClientes);

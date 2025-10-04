@@ -6,6 +6,7 @@
     <title><?= APP_NAME ?? 'Inicio' ?> - <?= $titulo ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="public/css/admin.css">
+    <link rel="shortcut icon" href="<?= APP_Logo?>" type="image/x-icon">
 </head>
 <style>
 /* Estilos generales */

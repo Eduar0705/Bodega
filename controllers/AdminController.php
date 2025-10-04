@@ -245,6 +245,76 @@ class AdminController
         require_once 'views/cuentas/index.php';
     }
 
+    public function descontarMonto() {
+        header('Content-Type: application/json');
+        header('X-Content-Type-Options: nosniff');
+        
+        // Verificar método POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Método no permitido'
+            ]);
+            exit;
+        }
+        
+        try {
+            // Capturar datos
+            $rawData = file_get_contents('php://input');
+            $data = json_decode($rawData, true);
+            
+            // Log básico
+            error_log("Datos recibidos: " . print_r($data, true));
+            
+            // Validaciones básicas
+            if (!isset($data['id_historial']) || !isset($data['monto'])) {
+                throw new Exception('Datos incompletos');
+            }
+            
+            $id_historial = intval($data['id_historial']);
+            $monto = floatval($data['monto']);
+            
+            if ($id_historial <= 0 || $monto <= 0) {
+                throw new Exception('Valores inválidos');
+            }
+            
+            // Verificar cuenta
+            $cuenta = $this->ccobrar->obtenerCuentaPorId($id_historial);
+            if (!$cuenta) {
+                throw new Exception('Cuenta no encontrada');
+            }
+            
+            if ($monto > floatval($cuenta['total_usd'])) {
+                throw new Exception('Monto mayor al disponible');
+            }
+            
+            // Ejecutar descuento
+            $resultado = $this->ccobrar->descontarMonto($id_historial, $monto);
+            
+            if (!$resultado) {
+                throw new Exception('Error en la base de datos');
+            }
+            
+            $nuevo_total = floatval($cuenta['total_usd']) - $monto;
+            
+            echo json_encode([
+                'success' => true,
+                'message' => $nuevo_total <= 0 ? 'Cuenta saldada completamente' : 'Pago parcial registrado correctamente',
+                'nuevo_total' => $nuevo_total
+            ]);
+            
+        } catch (Exception $e) {
+            error_log("ERROR descontarMonto: " . $e->getMessage());
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+
     //Funcion de Usuarios o Clientes
     public function users(){
         $titulo = 'Usuarios';
@@ -289,6 +359,7 @@ class AdminController
     //Funcion de configuracion
     public function config(){
         $titulo = 'Configuracion';
+        $usuarios = $this->config->mostrarUsuarios();
         
         // Actualizar nombre de la aplicación
         if(isset($_POST['uptade'])){
@@ -336,17 +407,31 @@ class AdminController
 
         // Agregar nuevo usuario administrativo
         if(isset($_POST['agregar_usuario'])){
-            $nombre = trim($_POST['nombre']);
+            $nombre = trim($_POST['nombre_usuario']);
             $cedula = trim($_POST['cedula']);
             $clave = trim($_POST['clave_usuario']);
             $id_cargo = (int)$_POST['id_cargo'];
 
-            if ($this->config->addUsuario($cedula, $nombre, $clave, $id_cargo)) {
-                header('Location: ?action=admin&method=config&mensaje=exito');
-                exit();
-            } else {
-                echo '<script>alert("Error al agregar el usuario. Intente nuevamente.")</script>';
-            }
+            $resultado = $this->config->addUsuario($cedula, $nombre, $clave, $id_cargo);
+            
+            $_SESSION['mensaje'] = $resultado['message'];
+            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+            
+            header('Location: ?action=admin&method=config');
+            exit();
+        }
+
+        // Eliminar usuario
+        if(isset($_POST['eliminar_usuario'])){
+            $id_usuario = (int)$_POST['id_usuario'];
+            
+            $resultado = $this->config->deleteUsuario($id_usuario);
+            
+            $_SESSION['mensaje'] = $resultado['message'];
+            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
+            
+            header('Location: ?action=admin&method=config');
+            exit();
         }
         
         require_once 'views/conf/index.php';

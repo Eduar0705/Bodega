@@ -77,12 +77,9 @@ class Config {
             ];
         }
 
-        // Hash de la contraseña (seguridad básica)
-        $claveHash = password_hash($nuevoValor, PASSWORD_DEFAULT);
-
         $sql = 'UPDATE admin SET claveSuper = ? WHERE id = 1';
         $stmt = $this->db->prepare($sql);
-        $stmt->bind_param("s", $claveHash);
+        $stmt->bind_param("s", $nuevoValor);
 
         if ($stmt->execute()) {
             return [
@@ -103,13 +100,6 @@ class Config {
             return [
                 'success' => false,
                 'message' => 'Cédula inválida. Debe contener entre 7 y 10 dígitos numéricos.'
-            ];
-        }
-
-        if (!in_array($id_cargo, [1, 2, 3])) { // Ajusta según tus cargos reales
-            return [
-                'success' => false,
-                'message' => 'Cargo inválido.'
             ];
         }
 
@@ -145,6 +135,56 @@ class Config {
                 'message' => 'Error al agregar usuario: ' . $stmt->error
             ];
         }
+    }
+
+    public function deleteUsuario($id_usuario) {
+        // Validación básica
+        if (!is_numeric($id_usuario) || $id_usuario <= 0) {
+            return [
+                'success' => false,
+                'message' => 'ID de usuario inválido.'
+            ];
+        }
+
+        $sql = "DELETE FROM inf_usuarios WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $id_usuario);
+
+        if ($stmt->execute()) {
+            if ($stmt->affected_rows > 0) {
+                return [
+                    'success' => true,
+                    'message' => 'Usuario eliminado exitosamente.'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'No se encontró el usuario con el ID proporcionado.'
+                ];
+            }
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Error al eliminar usuario: ' . $stmt->error
+            ];
+        }
+    }
+
+    public function mostrarUsuarios() {
+        $sql = "SELECT id, cedula, nombre, id_cargo FROM inf_usuarios";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $usuarios = [];
+
+        while ($row = $result->fetch_assoc()) {
+            $usuarios[] = $row;
+        }
+
+        return [
+            'success' => true,
+            'data' => $usuarios
+        ];
     }
 }
 ?>
