@@ -361,18 +361,6 @@ class AdminController
         $titulo = 'Configuracion';
         $usuarios = $this->config->mostrarUsuarios();
         
-        // Actualizar nombre de la aplicación
-        if(isset($_POST['uptade'])){
-            $nombre = trim($_POST['nombre']);
-            $resultado = $this->config->updateNombre($nombre);
-            
-            $_SESSION['mensaje'] = $resultado['message'];
-            $_SESSION['tipo_mensaje'] = $resultado['success'] ? 'success' : 'error';
-            
-            header('Location: ?action=admin&method=config');
-            exit();
-        }
-        
         // Cambiar clave maestra
         if(isset($_POST['cambiar_clave'])){
             $actual = trim($_POST['clave_actual']);
@@ -435,5 +423,31 @@ class AdminController
         }
         
         require_once 'views/conf/index.php';
+    }
+
+    // Actualizar nombre de la aplicación
+    public function cambiarNombreApp() {
+        if(isset($_POST['nombre_app'])) {
+            $nombre = trim($_POST['nombre_app']);
+            
+            // Tus validaciones aquí...
+            
+            $resultado = $this->config->updateNombre($nombre);
+            
+            // SI QUIERES USAR AJAX, devuelve JSON
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => $resultado['success'],
+                'message' => $resultado['message']
+            ]);
+            exit();
+            
+        } else {
+            // Para redirección normal (sin AJAX)
+            $_SESSION['mensaje'] = 'No se recibieron datos';
+            $_SESSION['tipo_mensaje'] = 'error';
+            header('Location: ?action=admin&method=config');
+            exit();
+        }
     }
 }

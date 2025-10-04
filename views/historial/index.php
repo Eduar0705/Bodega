@@ -277,6 +277,7 @@ tbody tr:hover {
     
     <!-- Script para ver productos -->
     <script>
+        const precio_usd = <?= APP_Dollar ?>;
         document.querySelectorAll('.btn-productos').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 let productosJson = btn.getAttribute('data-productos');
@@ -291,18 +292,37 @@ tbody tr:hover {
                     Swal.fire('Sin productos', 'No hay productos vendidos en este registro.', 'info');
                     return;
                 }
+                
                 let html = '<table style="width:100%;text-align:left"><thead><tr><th>Nombre</th><th>Código</th><th>Medida</th><th>Cantidad</th><th>Precio USD</th><th>Total USD</th></tr></thead><tbody>';
+                
                 productos.forEach(function(p) {
                     html += `<tr>
                         <td>${p.nombre}</td>
                         <td>${p.codigo}</td>
                         <td>${p.medida}</td>
                         <td>${p.cantidad}</td>
-                        <td>${parseFloat(p.precio_usd).toFixed(2)} $</td>
-                        <td>${parseFloat(p.cantidad * p.precio_usd).toFixed(2)} $</td>
+                        <td>${parseFloat(p.precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} $</td>
+                        <td>${parseFloat(p.cantidad * p.precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} $</td>
                     </tr>`;
                 });
-                html += '</tbody></table>';
+                
+                let totalGeneral = productos.reduce((sum, p) => sum + (p.cantidad * p.precio_usd), 0);
+                
+                html += '</tbody>';
+                html += `<tfoot style="border-top: 2px solid #ddd;">
+                    <tr>
+                        <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL bs:</td>
+                        <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">${(totalGeneral * precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} bs</td>
+                    </tr>
+                </tfoot>`;
+                html += `<tfoot style="border-top: 2px solid #ddd;">
+                    <tr>
+                        <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL :</td>
+                        <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">$${(totalGeneral).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                </tfoot>`;
+                html += '</table>';
+                
                 Swal.fire({
                     title: 'Productos vendidos',
                     html: html,

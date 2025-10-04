@@ -623,10 +623,10 @@
                 
                 // Actualizar elementos si existen
                 const elements = {
-                    'subtotal-usd': `$${subtotalUSD.toFixed(2)}`,
-                    'subtotal-bs': `Bs. ${subtotalBS.toFixed(2)}`,
-                    'total-usd': subtotalUSD.toFixed(2),
-                    'total-bs': subtotalBS.toFixed(2)
+                    'subtotal-usd': `$${subtotalUSD.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                    'subtotal-bs': `Bs. ${subtotalBS.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                    'total-usd': subtotalUSD.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+                    'total-bs': subtotalBS.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})
                 };
                 
                 Object.entries(elements).forEach(([id, value]) => {

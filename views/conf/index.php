@@ -156,7 +156,7 @@
                     <span>Este nombre aparecerá en el título y encabezado de todas las páginas.</span>
                 </div>
 
-                <form class="config-form" id="formNombreApp" method="POST" action="?action=admin&method=config" autocomplete="off">
+                <form class="config-form" id="formNombreApp" method="POST" action="?action=admin&method=cambiarNombreApp" autocomplete="off">
                     <div class="form-group">
                         <label for="nombre_app">
                             Nombre de la Aplicación<span class="required">*</span>
@@ -164,14 +164,14 @@
                         <input 
                             type="text" 
                             id="nombre_app" 
-                            name="nombre"
+                            name="nombre_app"
                             placeholder="Ingrese el nuevo nombre de la aplicación"
                             value="<?= APP_NAME ?? '' ?>"
                             required
                             maxlength="50">
                     </div>
 
-                    <button type="submit" name="uptade">
+                    <button type="submit" name="cambiar_nombre">
                         <i class="fas fa-check-circle"></i> Actualizar Nombre
                     </button>
                 </form>
@@ -354,14 +354,15 @@
             });
         });
 
-        // Validación del formulario de nombre de aplicación
+        // Validación del formulario de cambio de nombre de la aplicación
         document.getElementById('formNombreApp')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const nuevoNombre = document.getElementById('nombre_app').value.trim();
             const nombreActual = '<?= APP_NAME ?? '' ?>';
 
-            if(nuevoNombre.length === 0) {
+            // Validaciones (mantén las que ya tienes)
+            if (nuevoNombre.length === 0) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Campo Vacío',
@@ -371,7 +372,7 @@
                 return;
             }
 
-            if(nuevoNombre === nombreActual) {
+            if (nuevoNombre === nombreActual) {
                 Swal.fire({
                     icon: 'info',
                     title: 'Sin Cambios',
@@ -397,7 +398,8 @@
                         Swal.showValidationMessage('Debe ingresar la clave maestra');
                         return false;
                     }
-                    if (clave !== ClaveMaestra) {
+                    // Aquí va tu validación de clave maestra
+                    if (clave !== 'tu_clave_maestra') { // Reemplaza con tu validación real
                         Swal.showValidationMessage('Clave maestra incorrecta');
                         return false;
                     }
@@ -405,12 +407,7 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Agregar campo oculto con la clave maestra para validar en el backend
-                    const inputClave = document.createElement('input');
-                    inputClave.type = 'hidden';
-                    inputClave.name = 'clave_maestra_validacion';
-                    inputClave.value = ClaveMaestra;
-                    this.appendChild(inputClave);
+                    // Enviar formulario normalmente (sin esperar JSON)
                     this.submit();
                 }
             });

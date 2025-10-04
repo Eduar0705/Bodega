@@ -329,6 +329,7 @@ tbody tr.pagado {
     
     <!-- Script para ver productos -->
     <script>
+        const precio_usd = <?= APP_Dollar ?>;
         document.querySelectorAll('.btn-productos').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 let productosJson = btn.getAttribute('data-productos');
@@ -379,8 +380,8 @@ tbody tr.pagado {
                             <td style="padding: 8px;">${p.nombre}</td>
                             <td style="padding: 8px;">${p.codigo}</td>
                             <td style="padding: 8px; text-align: center;">${p.cantidad} ${p.medida || ''}</td>
-                            <td style="padding: 8px; text-align: right;">$${parseFloat(p.precio_usd).toFixed(2)}</td>
-                            <td style="padding: 8px; text-align: right; font-weight: bold;">$${totalProducto.toFixed(2)}</td>
+                            <td style="padding: 8px; text-align: right;">$${parseFloat(p.precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="padding: 8px; text-align: right; font-weight: bold;">$${totalProducto.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                         </tr>
                     `;
                 });
@@ -390,7 +391,18 @@ tbody tr.pagado {
                             <tfoot style="border-top: 2px solid #ddd;">
                                 <tr>
                                     <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL:</td>
-                                    <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">$${totalGeneral.toFixed(2)}</td>
+                                    <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">$${totalGeneral.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `;
+                html += `
+                            </tbody>
+                            <tfoot style="border-top: 2px solid #ddd;">
+                                <tr>
+                                    <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL bs:</td>
+                                    <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">${(totalGeneral * precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} bs</td>
                                 </tr>
                             </tfoot>
                         </table>
