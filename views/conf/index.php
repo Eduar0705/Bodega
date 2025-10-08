@@ -267,272 +267,61 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!--ELIMINAR USUARIO-->
     <script>
-        const ClaveMaestra = '<?= APP_Password ?>';
-
-        // Toggle de contraseñas
-        function togglePassword(){
-            const toggleIcons = document.querySelectorAll('.toggle-password');
-            toggleIcons.forEach(icon => {
-                icon.addEventListener('click', () => {
-                    const targetId = icon.getAttribute('data-target');
-                    const input = document.getElementById(targetId);
-                    const isVisible = input.type === 'text';
-                    input.type = isVisible ? 'password' : 'text';
-                    icon.classList.toggle('fa-eye', isVisible);
-                    icon.classList.toggle('fa-eye-slash', !isVisible);
-                });
-            });
-        }
-
-        // Validación del formulario de cambio de clave maestra
-        document.getElementById('formClaveMaestra')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const claveActual = document.getElementById('clave_actual').value;
-            const claveNueva = document.getElementById('clave_nueva').value;
-            const confirmarClave = document.getElementById('confirmar_clave').value;
-
-            // Verificar que la clave actual sea correcta (comparar con ClaveMaestra)
-            if(claveActual !== ClaveMaestra) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de Autenticación',
-                    text: 'La clave maestra actual es incorrecta',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Verificar que las claves nuevas coincidan
-            if(claveNueva !== confirmarClave) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de Validación',
-                    text: 'Las claves nuevas no coinciden',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Verificar longitud mínima
-            if(claveNueva.length < 6) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Clave Insegura',
-                    text: 'La clave debe tener al menos 6 caracteres',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Verificar que la nueva clave sea diferente a la actual
-            if(claveNueva === ClaveMaestra) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Clave Repetida',
-                    text: 'La nueva clave debe ser diferente a la actual',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Confirmar cambio
-            Swal.fire({
-                title: '¿Confirmar cambio?',
-                text: "Se actualizará la clave maestra del sistema",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, cambiar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.submit();
-                }
-            });
-        });
-
-        // Validación del formulario de cambio de nombre de la aplicación
-        document.getElementById('formNombreApp')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const nuevoNombre = document.getElementById('nombre_app').value.trim();
-            const nombreActual = '<?= APP_NAME ?? '' ?>';
-
-            // Validaciones (mantén las que ya tienes)
-            if (nuevoNombre.length === 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campo Vacío',
-                    text: 'El nombre de la aplicación no puede estar vacío',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            if (nuevoNombre === nombreActual) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Sin Cambios',
-                    text: 'El nuevo nombre es igual al actual',
-                    confirmButtonColor: '#3085d6'
-                });
-                return;
-            }
-
-            // Solicitar clave maestra
-            Swal.fire({
-                title: 'Autenticación Requerida',
-                html: '<input type="password" id="swal-clave" class="swal2-input" placeholder="Ingrese la clave maestra">',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar',
-                preConfirm: () => {
-                    const clave = document.getElementById('swal-clave').value;
-                    if (!clave) {
-                        Swal.showValidationMessage('Debe ingresar la clave maestra');
-                        return false;
-                    }
-                    // Aquí va tu validación de clave maestra
-                    if (clave !== 'tu_clave_maestra') { // Reemplaza con tu validación real
-                        Swal.showValidationMessage('Clave maestra incorrecta');
-                        return false;
-                    }
-                    return true;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Enviar formulario normalmente (sin esperar JSON)
-                    this.submit();
-                }
-            });
-        });
-
-        // Validación del formulario de agregar usuario
-        document.getElementById('formAgregarUsuario')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const cedula = document.getElementById('cedula').value.trim();
-            const nombre = document.getElementById('nombre_usuario').value.trim();
-            const clave = document.getElementById('clave_usuario').value;
-
-            // Validar cédula
-            if(!/^[0-9]{7,10}$/.test(cedula)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Cédula Inválida',
-                    text: 'La cédula debe contener entre 7 y 10 dígitos numéricos',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Validar nombre
-            if(nombre.length === 0) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Nombre Requerido',
-                    text: 'Debe ingresar el nombre completo del usuario',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Validar clave
-            if(clave.length < 6) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Clave Insegura',
-                    text: 'La clave debe tener al menos 6 caracteres',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            // Solicitar clave maestra
-            Swal.fire({
-                title: 'Autenticación Requerida',
-                html: '<input type="password" id="swal-clave" class="swal2-input" placeholder="Ingrese la clave maestra">',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Agregar Usuario',
-                cancelButtonText: 'Cancelar',
-                preConfirm: () => {
-                    const clave = document.getElementById('swal-clave').value;
-                    if (!clave) {
-                        Swal.showValidationMessage('Debe ingresar la clave maestra');
-                        return false;
-                    }
-                    if (clave !== ClaveMaestra) {
-                        Swal.showValidationMessage('Clave maestra incorrecta');
-                        return false;
-                    }
-                    return true;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    this.submit();
-                }
-            });
-        });
-
-        // Función para eliminar usuario
         function eliminarUsuario(id, nombre) {
             Swal.fire({
-                title: '¿Está seguro?',
-                html: `Se eliminará al usuario: <strong>${nombre}</strong><br><br>` +
-                        '<input type="password" id="swal-clave" class="swal2-input" placeholder="Ingrese la clave maestra">',
+                title: '¿Estás seguro?',
+                text: `¿Deseas eliminar al usuario "${nombre}"? Esta acción no se puede deshacer.`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar',
-                preConfirm: () => {
-                    const clave = document.getElementById('swal-clave').value;
-                    if (!clave) {
-                        Swal.showValidationMessage('Debe ingresar la clave maestra');
-                        return false;
-                    }
-                    if (clave !== ClaveMaestra) {
-                        Swal.showValidationMessage('Clave maestra incorrecta');
-                        return false;
-                    }
-                    return true;
-                }
+                cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Crear formulario y enviarlo
+                    // Enviar el formulario por POST para eliminar el usuario
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '?action=admin&method=config';
-                    
+
                     const inputId = document.createElement('input');
                     inputId.type = 'hidden';
                     inputId.name = 'id_usuario';
                     inputId.value = id;
-                    
+                    form.appendChild(inputId);
+
                     const inputEliminar = document.createElement('input');
                     inputEliminar.type = 'hidden';
                     inputEliminar.name = 'eliminar_usuario';
                     inputEliminar.value = '1';
-                    
-                    form.appendChild(inputId);
                     form.appendChild(inputEliminar);
+
                     document.body.appendChild(form);
                     form.submit();
                 }
             });
         }
+    </script>
 
-        document.addEventListener('DOMContentLoaded', togglePassword);
+    <!-- TOGGLE PASSWORD VISIBILITY -->
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(function(element) {
+            element.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetInput = document.getElementById(targetId);
+                if (targetInput.type === 'password') {
+                    targetInput.type = 'text';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    targetInput.type = 'password';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
+        });
     </script>
 </body>
 </html>

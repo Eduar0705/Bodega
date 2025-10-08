@@ -239,6 +239,7 @@ class AdminController
         $historial = $this->historial->obtenerHistorial();
         require_once 'views/historial/index.php';
     }
+
     public function cuentas(){
         $titulo = 'Cuentas por cobrar';
         $cuentas = $this->ccobrar->obtenerCC();
@@ -246,7 +247,8 @@ class AdminController
     }
 
     public function descontarMonto() {
-        header('Content-Type: application/json');
+        // IMPORTANTE: Asegurarse de que no haya salida antes de esto
+        header('Content-Type: application/json; charset=utf-8');
         header('X-Content-Type-Options: nosniff');
         
         // Verificar método POST
@@ -255,63 +257,109 @@ class AdminController
             echo json_encode([
                 'success' => false,
                 'message' => 'Método no permitido'
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
         
         try {
-            // Capturar datos
+            // Capturar datos RAW
             $rawData = file_get_contents('php://input');
+            
+            error_log("=== INICIO DESCONTAR MONTO ===");
+            error_log("Raw Data: " . $rawData);
+            
+            if (empty($rawData)) {
+                throw new Exception('No se recibieron datos');
+            }
+            
             $data = json_decode($rawData, true);
             
-            // Log básico
-            error_log("Datos recibidos: " . print_r($data, true));
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Error al decodificar JSON: ' . json_last_error_msg());
+            }
             
-            // Validaciones básicas
-            if (!isset($data['id_historial']) || !isset($data['monto'])) {
-                throw new Exception('Datos incompletos');
+            error_log("Datos decodificados: " . print_r($data, true));
+            
+            // Validaciones
+            if (!isset($data['id_historial'])) {
+                throw new Exception('Falta el ID del historial');
+            }
+            
+            if (!isset($data['monto'])) {
+                throw new Exception('Falta el monto a descontar');
             }
             
             $id_historial = intval($data['id_historial']);
             $monto = floatval($data['monto']);
             
-            if ($id_historial <= 0 || $monto <= 0) {
-                throw new Exception('Valores inválidos');
+            // Validar valores
+            if ($id_historial <= 0) {
+                throw new Exception('ID de historial inválido');
             }
             
-            // Verificar cuenta
+            if ($monto <= 0) {
+                throw new Exception('El monto debe ser mayor a 0');
+            }
+            
+            // Redondear a 2 decimales
+            $monto = round($monto, 2);
+            
+            error_log("ID: $id_historial, Monto: $monto");
+            
+            // Verificar que el modelo esté instanciado
+            if (!isset($this->ccobrar)) {
+                throw new Exception('Modelo Ccobrar no está instanciado');
+            }
+            
+            // Verificar que la cuenta existe
             $cuenta = $this->ccobrar->obtenerCuentaPorId($id_historial);
+            
             if (!$cuenta) {
                 throw new Exception('Cuenta no encontrada');
             }
             
-            if ($monto > floatval($cuenta['total_usd'])) {
-                throw new Exception('Monto mayor al disponible');
+            error_log("Cuenta encontrada: " . print_r($cuenta, true));
+            
+            $total_actual = floatval($cuenta['total_usd']);
+            
+            // Validar que el monto no sea mayor al disponible (con margen de 0.01)
+            if ($monto > ($total_actual + 0.01)) {
+                throw new Exception('El monto ($' . number_format($monto, 2) . ') es mayor al saldo disponible ($' . number_format($total_actual, 2) . ')');
             }
             
             // Ejecutar descuento
             $resultado = $this->ccobrar->descontarMonto($id_historial, $monto);
             
             if (!$resultado) {
-                throw new Exception('Error en la base de datos');
+                throw new Exception('Error al procesar el descuento en la base de datos');
             }
             
-            $nuevo_total = floatval($cuenta['total_usd']) - $monto;
+            $nuevo_total = round($total_actual - $monto, 2);
+            if ($nuevo_total < 0) $nuevo_total = 0;
             
+            error_log("✓ Descuento exitoso. Nuevo total: $" . $nuevo_total);
+            
+            // Respuesta exitosa
             echo json_encode([
                 'success' => true,
-                'message' => $nuevo_total <= 0 ? 'Cuenta saldada completamente' : 'Pago parcial registrado correctamente',
-                'nuevo_total' => $nuevo_total
-            ]);
+                'message' => $nuevo_total <= 0.01 
+                    ? 'Cuenta saldada completamente' 
+                    : 'Pago de $' . number_format($monto, 2) . ' registrado. Saldo restante: $' . number_format($nuevo_total, 2),
+                'nuevo_total' => $nuevo_total,
+                'monto_pagado' => $monto
+            ], JSON_UNESCAPED_UNICODE);
             
         } catch (Exception $e) {
-            error_log("ERROR descontarMonto: " . $e->getMessage());
+            error_log("✗ ERROR descontarMonto: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            
             http_response_code(400);
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         }
+        
         exit;
     }
 
@@ -427,23 +475,31 @@ class AdminController
 
     // Actualizar nombre de la aplicación
     public function cambiarNombreApp() {
+        $this->iniciarSesion();
         if(isset($_POST['nombre_app'])) {
             $nombre = trim($_POST['nombre_app']);
             
-            // Tus validaciones aquí...
+            // Validación básica: no vacío y longitud razonable
+            if(empty($nombre) || strlen($nombre) > 100){
+                $_SESSION['mensaje'] = 'El nombre de la aplicación no puede estar vacío ni exceder 100 caracteres.';
+                $_SESSION['tipo_mensaje'] = 'error';
+                header('Location: ?action=admin&method=config');
+                exit();
+            }
             
             $resultado = $this->config->updateNombre($nombre);
-            
-            // SI QUIERES USAR AJAX, devuelve JSON
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => $resultado['success'],
-                'message' => $resultado['message']
-            ]);
+
+            if(isset($resultado['success']) && $resultado['success']) {
+                $_SESSION['mensaje'] = $resultado['message'];
+                $_SESSION['tipo_mensaje'] = 'success';
+            } else {
+                $_SESSION['mensaje'] = isset($resultado['message']) ? $resultado['message'] : 'Error al actualizar el nombre.';
+                $_SESSION['tipo_mensaje'] = 'error';
+            }
+            header('Location: ?action=admin&method=config');
             exit();
             
         } else {
-            // Para redirección normal (sin AJAX)
             $_SESSION['mensaje'] = 'No se recibieron datos';
             $_SESSION['tipo_mensaje'] = 'error';
             header('Location: ?action=admin&method=config');

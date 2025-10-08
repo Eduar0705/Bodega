@@ -32,6 +32,7 @@ class Ccobrar{
         $stmt = $this->bd->prepare($sql);
         
         if (!$stmt) {
+            error_log("Error preparando consulta: " . $this->bd->error);
             return null;
         }
         
@@ -59,85 +60,72 @@ class Ccobrar{
             $total_actual = floatval($cuenta['total_usd']);
             $monto = floatval($monto);
             
+            error_log("Total actual: $total_actual, Monto a descontar: $monto");
+            
             // 2. Validar que el monto no sea mayor al disponible
             if ($monto > $total_actual) {
                 throw new Exception("El monto $monto es mayor al total disponible $total_actual");
             }
             
             // 3. Calcular nuevo total
-            $nuevo_total = $total_actual - $monto;
+            $nuevo_total = round($total_actual - $monto, 2);
+            error_log("Nuevo total calculado: $nuevo_total");
             
-            // 4. Actualizar cuentascobrar
-            if ($nuevo_total <= 0) {
+            // 4. Actualizar SOLO cuentascobrar
+            if ($nuevo_total <= 0.01) {
                 // Pago completo
-                $sql_cc = "UPDATE cuentascobrar SET 
-                            tipo_pago = 'pago', 
-                            tipo_venta = 'pagado',
-                            total_usd = 0 
-                            WHERE id_historial = ?";
+                $sql = "UPDATE cuentascobrar SET 
+                        tipo_pago = 'pago', 
+                        tipo_venta = 'pagado',
+                        total_usd = 0 
+                        WHERE id_historial = ?";
+                
+                $stmt = $this->bd->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception("Error preparando UPDATE: " . $this->bd->error);
+                }
+                
+                $stmt->bind_param("i", $id);
             } else {
                 // Pago parcial
-                $sql_cc = "UPDATE cuentascobrar SET 
-                            total_usd = ?,
-                            tipo_venta = 'parcial'
-                            WHERE id_historial = ?";
+                $sql = "UPDATE cuentascobrar SET 
+                        total_usd = ?,
+                        tipo_venta = 'parcial'
+                        WHERE id_historial = ?";
+                
+                $stmt = $this->bd->prepare($sql);
+                if (!$stmt) {
+                    throw new Exception("Error preparando UPDATE: " . $this->bd->error);
+                }
+                
+                $stmt->bind_param("di", $nuevo_total, $id);
             }
             
-            $stmt_cc = $this->bd->prepare($sql_cc);
-            if (!$stmt_cc) {
-                throw new Exception("Error al preparar consulta de cuentascobrar");
+            if (!$stmt->execute()) {
+                throw new Exception("Error ejecutando UPDATE: " . $stmt->error);
             }
             
-            if ($nuevo_total <= 0) {
-                $stmt_cc->bind_param("i", $id);
-            } else {
-                $stmt_cc->bind_param("di", $nuevo_total, $id);
-            }
+            $filas_afectadas = $stmt->affected_rows;
+            error_log("Filas afectadas: $filas_afectadas");
+            $stmt->close();
             
-            if (!$stmt_cc->execute()) {
-                throw new Exception("Error al actualizar cuentascobrar");
+            // Validar que se actualizó al menos una fila
+            if ($filas_afectadas === 0) {
+                error_log("ADVERTENCIA: No se actualizó ninguna fila. ID: $id");
             }
-            $stmt_cc->close();
-            
-            // 5. Actualizar historial_ventas
-            if ($nuevo_total <= 0) {
-                // Pago completo
-                $sql_hv = "UPDATE historial_ventas SET 
-                            tipo_pago = 'pago',
-                            tipo_venta = 'pagado'
-                            WHERE id = ?";
-            } else {
-                // Pago parcial
-                $sql_hv = "UPDATE historial_ventas SET 
-                            tipo_venta = 'parcial'
-                            WHERE id = ?";
-            }
-            
-            $stmt_hv = $this->bd->prepare($sql_hv);
-            if (!$stmt_hv) {
-                throw new Exception("Error al preparar consulta de historial_ventas");
-            }
-            
-            $stmt_hv->bind_param("i", $id);
-            
-            if (!$stmt_hv->execute()) {
-                throw new Exception("Error al actualizar historial_ventas");
-            }
-            $stmt_hv->close();
             
             // Confirmar transacción
             $this->bd->commit();
             
-            // Log de éxito
-            error_log("Descuento exitoso - ID: $id, Monto: $monto, Nuevo total: $nuevo_total");
+            error_log("✓ Descuento exitoso - ID: $id, Monto: $monto, Nuevo total: $nuevo_total");
             
             return true;
             
         } catch (Exception $e) {
             // Revertir cambios en caso de error
             $this->bd->rollback();
-            error_log("Error en descontarMonto: " . $e->getMessage() . " | ID: $id | Monto: $monto");
-            return false;
+            error_log("✗ Error en descontarMonto: " . $e->getMessage());
+            throw $e; // Re-lanzar la excepción para que el controlador la capture
         }
     }
 }

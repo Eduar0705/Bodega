@@ -422,11 +422,14 @@ tbody tr.pagado {
 
     <!-- Script para botón descontar -->
     <script>
+        // Script para botón descontar - VERSIÓN CORREGIDA
         document.querySelectorAll('.btn-descontar').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const idHistorial = this.getAttribute('data-id');
                 const montoTotal = parseFloat(this.getAttribute('data-monto'));
                 const nombreCliente = this.getAttribute('data-cliente');
+                
+                console.log('Iniciando pago:', {idHistorial, montoTotal, nombreCliente});
                 
                 Swal.fire({
                     title: 'Registrar Pago',
@@ -434,77 +437,196 @@ tbody tr.pagado {
                         <div style="text-align: left; margin: 20px 0;">
                             <p style="margin: 10px 0;"><strong>Cliente:</strong> ${nombreCliente}</p>
                             <p style="margin: 10px 0;"><strong>Saldo pendiente:</strong> <span style="color: #e74c3c; font-size: 20px; font-weight: bold;">$${montoTotal.toFixed(2)}</span></p>
+                            <p style="margin: 10px 0;"><strong>Saldo pendiente:</strong> <span style="color: #e74c3c; font-size: 20px; font-weight: bold;">${(montoTotal * precio_usd).toFixed(2)} Bs</span></p>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; text-align: left; margin-bottom: 10px; cursor: pointer;">
+                                <input type="radio" name="tipo_pago" value="usd" checked style="margin-right: 5px;">
+                                <strong>Pagar en Dólares (USD)</strong>
+                            </label>
+                            <input type="number" id="monto_usd" class="swal2-input" placeholder="Ingrese monto en USD" 
+                                min="0.01" max="${montoTotal}" step="0.01" value="${montoTotal.toFixed(2)}" 
+                                style="width: 90%; margin: 10px 0;">
+                            
+                            <label style="display: block; text-align: left; margin: 20px 0 10px 0; cursor: pointer;">
+                                <input type="radio" name="tipo_pago" value="bs" style="margin-right: 5px;">
+                                <strong>Pagar en Bolívares (Bs)</strong>
+                            </label>
+                            <input type="number" id="monto_bs" class="swal2-input" placeholder="Ingrese monto en Bs" 
+                                min="0.01" step="0.01" disabled 
+                                style="width: 90%; margin: 10px 0;">
+                            
+                            <p id="equivalencia" style="margin-top: 10px; color: #16a085; font-weight: bold; font-size: 15px;"></p>
                         </div>
                     `,
-                    input: 'number',
-                    inputLabel: 'Monto a registrar',
-                    inputPlaceholder: `Ingrese el monto (máximo: $${montoTotal.toFixed(2)})`,
-                    inputValue: montoTotal.toFixed(2),
-                    inputAttributes: {
-                        min: 0.01,
-                        max: montoTotal,
-                        step: '0.01'
-                    },
                     showCancelButton: true,
                     confirmButtonText: '<i class="fas fa-check"></i> Registrar Pago',
                     cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
                     confirmButtonColor: '#27ae60',
                     cancelButtonColor: '#95a5a6',
                     showLoaderOnConfirm: true,
-                    preConfirm: (monto) => {
-                        const montoNum = parseFloat(monto);
+                    didOpen: () => {
+                        const radioUsd = document.querySelector('input[value="usd"]');
+                        const radioBs = document.querySelector('input[value="bs"]');
+                        const inputUsd = document.getElementById('monto_usd');
+                        const inputBs = document.getElementById('monto_bs');
+                        const equivalencia = document.getElementById('equivalencia');
                         
-                        if (!monto || montoNum <= 0) {
-                            Swal.showValidationMessage('Ingrese un monto válido mayor a 0');
-                            return false;
+                        function actualizarEquivalencia() {
+                            if (radioUsd.checked && inputUsd.value) {
+                                const usd = parseFloat(inputUsd.value);
+                                if (!isNaN(usd) && usd > 0) {
+                                    const bs = (usd * precio_usd).toFixed(2);
+                                    equivalencia.textContent = `≈ ${bs} Bs`;
+                                } else {
+                                    equivalencia.textContent = '';
+                                }
+                            } else if (radioBs.checked && inputBs.value) {
+                                const bs = parseFloat(inputBs.value);
+                                if (!isNaN(bs) && bs > 0) {
+                                    const usd = (bs / precio_usd).toFixed(2);
+                                    equivalencia.textContent = `≈ $${usd}`;
+                                } else {
+                                    equivalencia.textContent = '';
+                                }
+                            } else {
+                                equivalencia.textContent = '';
+                            }
                         }
                         
-                        if (montoNum > montoTotal) {
+                        radioUsd.addEventListener('change', function() {
+                            inputUsd.disabled = false;
+                            inputBs.disabled = true;
+                            inputBs.value = '';
+                            if (!inputUsd.value) {
+                                inputUsd.value = montoTotal.toFixed(2);
+                            }
+                            actualizarEquivalencia();
+                        });
+                        
+                        radioBs.addEventListener('change', function() {
+                            inputUsd.disabled = true;
+                            inputBs.disabled = false;
+                            inputUsd.value = '';
+                            if (!inputBs.value) {
+                                inputBs.value = (montoTotal * precio_usd).toFixed(2);
+                            }
+                            actualizarEquivalencia();
+                        });
+                        
+                        inputUsd.addEventListener('input', actualizarEquivalencia);
+                        inputBs.addEventListener('input', actualizarEquivalencia);
+                        
+                        actualizarEquivalencia();
+                    },
+                    preConfirm: () => {
+                        const radioUsd = document.querySelector('input[value="usd"]');
+                        const inputUsd = document.getElementById('monto_usd');
+                        const inputBs = document.getElementById('monto_bs');
+                        
+                        let montoUsd;
+                        
+                        if (radioUsd.checked) {
+                            montoUsd = parseFloat(inputUsd.value);
+                            
+                            if (!inputUsd.value || isNaN(montoUsd) || montoUsd <= 0) {
+                                Swal.showValidationMessage('Ingrese un monto válido en USD mayor a 0');
+                                return false;
+                            }
+                        } else {
+                            const montoBs = parseFloat(inputBs.value);
+                            
+                            if (!inputBs.value || isNaN(montoBs) || montoBs <= 0) {
+                                Swal.showValidationMessage('Ingrese un monto válido en Bs mayor a 0');
+                                return false;
+                            }
+                            
+                            montoUsd = montoBs / precio_usd;
+                        }
+                        
+                        // Permitir un pequeño margen de error (0.01)
+                        if (montoUsd > (montoTotal + 0.01)) {
                             Swal.showValidationMessage(`El monto no puede ser mayor a $${montoTotal.toFixed(2)}`);
                             return false;
                         }
+                        
+                        // Preparar datos
+                        const datosEnvio = { 
+                            id_historial: parseInt(idHistorial),
+                            monto: parseFloat(montoUsd.toFixed(2))
+                        };
+                        
+                        console.log('=== ENVIANDO SOLICITUD ===');
+                        console.log('URL:', '?action=admin&method=descontarMonto');
+                        console.log('Datos:', datosEnvio);
                         
                         // Realizar el fetch
                         return fetch('?action=admin&method=descontarMonto', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
+                                'Accept': 'application/json'
                             },
-                            body: JSON.stringify({ 
-                                id_historial: idHistorial,
-                                monto: montoNum
-                            })
+                            body: JSON.stringify(datosEnvio)
                         })
                         .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Error en la respuesta del servidor');
-                            }
-                            return response.json();
+                            console.log('=== RESPUESTA RECIBIDA ===');
+                            console.log('Status:', response.status);
+                            console.log('OK:', response.ok);
+                            
+                            // Leer el texto de la respuesta
+                            return response.text().then(text => {
+                                console.log('Respuesta texto:', text);
+                                
+                                // Intentar parsear JSON
+                                try {
+                                    const data = JSON.parse(text);
+                                    console.log('Respuesta parseada:', data);
+                                    
+                                    if (!response.ok) {
+                                        throw new Error(data.message || `Error HTTP ${response.status}`);
+                                    }
+                                    
+                                    if (!data.success) {
+                                        throw new Error(data.message || 'Error desconocido del servidor');
+                                    }
+                                    
+                                    return data;
+                                } catch (parseError) {
+                                    console.error('Error parseando JSON:', parseError);
+                                    console.error('Texto recibido:', text);
+                                    
+                                    // Buscar si hay HTML en la respuesta (error común)
+                                    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                                        throw new Error('El servidor devolvió HTML en lugar de JSON. Revisa que no haya errores PHP o salidas antes del JSON.');
+                                    }
+                                    
+                                    throw new Error('Respuesta inválida del servidor. Revisa la consola para más detalles.');
+                                }
+                            });
                         })
                         .catch(error => {
-                            Swal.showValidationMessage(`Error: ${error.message || 'No se pudo conectar con el servidor'}`);
+                            console.error('=== ERROR ===');
+                            console.error('Mensaje:', error.message);
+                            console.error('Stack:', error.stack);
+                            
+                            Swal.showValidationMessage(`Error: ${error.message}`);
+                            return false;
                         });
                     },
                     allowOutsideClick: () => !Swal.isLoading()
                 }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        if (result.value.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Pago Registrado!',
-                                text: result.value.message,
-                                confirmButtonColor: '#27ae60'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: result.value.message || 'No se pudo procesar el pago',
-                                confirmButtonColor: '#e74c3c'
-                            });
-                        }
+                    console.log('=== RESULTADO FINAL ===', result);
+                    
+                    if (result.isConfirmed && result.value && result.value.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Pago Registrado!',
+                            text: result.value.message,
+                            confirmButtonColor: '#27ae60'
+                        }).then(() => {
+                            location.reload();
+                        });
                     }
                 });
             });
