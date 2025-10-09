@@ -98,7 +98,7 @@ if (verificarBaseDeDatosExiste()) {
             $servername = "localhost";
             $username = "root";
             $password = "";
-            $dbname = "bodega22";
+            $dbname = "bodega";
 
             try {
                 $conn = new mysqli($servername, $username, $password);
@@ -124,7 +124,7 @@ if (verificarBaseDeDatosExiste()) {
             $servername = "localhost";
             $username = "root";
             $password = "";
-            $dbname = "bodega22";
+            $dbname = "bodega";
 
             try {
                 // Crear conexión sin seleccionar base de datos

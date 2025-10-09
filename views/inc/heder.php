@@ -104,7 +104,7 @@
         display: block;
     }
 
-    .user-dropdown a {
+    .user-dropdown a, button {
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -114,7 +114,11 @@
         transition: var(--transition);
     }
 
-    .user-dropdown a:hover {
+    .user-dropdown button{
+        border: none;
+    }
+
+    .user-dropdown a:hover , button:hover{
         background-color: #f5f5f5;
     }
 
@@ -236,6 +240,110 @@
         box-shadow: var(--shadow);
         margin-bottom: 1.5rem;
     }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: auto;
+        background: rgba(44, 62, 80, 0.35);
+        backdrop-filter: blur(2px);
+        transition: var(--transition);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal form {
+        background: #fff;
+        margin: 8% auto;
+        padding: 2rem 2.5rem 1.5rem 2.5rem;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(44,62,80,0.18);
+        max-width: 350px;
+        width: 90%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border: 1px solid #e0e0e0;
+    }
+
+    .close {
+        color: #888;
+        position: absolute;
+        top: 18px;
+        right: 22px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.2s;
+        z-index: 10;
+    }
+
+    .close:hover {
+        color: var(--danger-color);
+    }
+
+    #veriFrom label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 15px;
+    }
+
+    #clave {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 5px;
+        font-size: 15px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        transition: border-color 0.2s;
+    }
+
+    #clave:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        background: #fff;
+    }
+
+    #verif {
+        background-color: #38d718ff;
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        border: none;
+        margin-top: 8px;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(52,152,219,0.08);
+        transition: background 0.2s;
+        text-align: center;
+    }
+
+    #verif:hover {
+        background-color: #21bb236c;
+        color: #2c3e50;
+    }
+
+    @media (max-width: 480px) {
+        .modal form {
+            padding: 1.2rem 1rem 1rem 1rem;
+            max-width: 95vw;
+        }
+        .close {
+            top: 10px;
+            right: 14px;
+            font-size: 24px;
+        }
+    }
+
 </style>
 
 <!-- Menú Superior -->
@@ -254,10 +362,10 @@
                 <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
             </div>
             <div class="user-dropdown" id="userDropdown">
-                <a href="?action=admin&method=config">
+                <button id="abrir" name="abrir" >
                     <i class="fas fa-cog"></i>
                     <span>Configuración</span>
-                </a>
+                </button>
                 <a href="./">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Cerrar Sesión</span>
@@ -266,6 +374,7 @@
         </div>
     </div>
 </nav>
+<!-- href="?action=admin&method=config" -->
 
 <!-- Menú Lateral -->
 <aside class="sidebar" id="sidebar">
@@ -307,10 +416,99 @@
                     <span>Usuarios</span>
                 </a>
             </li>
+            <li>
+                <a href="?action=admin&method=estadisticas">
+                    <i class="fas fa-users"></i>
+                    <span>Edtadisticas</span>
+                </a>
+            </li>
         </ul>
     </div>
 </aside>
+<div id="verifModal" class="modal">
+    <form action="" method="post" id="veriFrom" autocomplete="off">
+        <span class="close">&times;</span>
+        <h2>Validación de Clave</h2>
+        <label for="clave">Clave Superior:</label>
+        <div style="position:relative;">
+            <input type="password" name="clave" id="clave" required>
+            <button type="button" id="toggleClave" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">
+                <i class="fas fa-eye" id="eyeIcon"></i>
+            </button>
+        </div>
+        <button type="submit" name="verif" id="verif">Verificar</button>
+    </form>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- FUNCION DEL modal -->
+<script>
+    const modal = document.getElementById('verifModal');
+    const abrir = document.getElementById('abrir');
+    const closeBtn = document.querySelector('.close');
+    const toggleClave = document.getElementById('toggleClave');
+    const claveInput = document.getElementById('clave');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const claveSuper = "<?= addslashes(APP_Password) ?>";
+
+    // Abrir modal
+    abrir.addEventListener("click", () => {
+        modal.style.display = "flex";
+    });
+
+    // Cerrar modal
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        claveInput.value = '';
+    });
+
+    // Mostrar/ocultar clave
+    toggleClave.addEventListener("click", () => {
+        if (claveInput.type === "password") {
+            claveInput.type = "text";
+            eyeIcon.classList.remove("fa-eye");
+            eyeIcon.classList.add("fa-eye-slash");
+        } else {
+            claveInput.type = "password";
+            eyeIcon.classList.remove("fa-eye-slash");
+            eyeIcon.classList.add("fa-eye");
+        }
+    });
+
+    // Cerrar modal al hacer click fuera del formulario
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Verificación de clave y redirige a configuración
+    document.getElementById('veriFrom').addEventListener('submit', function(e){
+        e.preventDefault();
+        if(claveInput.value === claveSuper){
+            window.location.href = "?action=admin&method=config";
+        } else {
+            modal.style.display = 'none';
+            Swal.fire({
+                title: 'ERROR',
+                text: 'Error, la clave ingresada es incorrecta',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Volver a intentar',
+                cancelButtonText: 'Cancelar'
+            }).then((resul)=>{
+                if(resul.isConfirmed){
+                    modal.style.display = 'flex';
+                    claveInput.value = '';
+                }
+            })
+        }
+    });
+</script>
+
+<!-- PARA EL NAV Y EL ASIDE -->
 <script>
     // Toggle del menú de usuario
     const userProfile = document.getElementById('userProfile');

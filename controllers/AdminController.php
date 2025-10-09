@@ -383,6 +383,11 @@ class AdminController
         require_once 'views/usuarios/index.php';
     }
 
+    public function estadisticas(){
+        $titulo = 'Estadisticas';
+        require_once 'views/estadisticas/index.php';
+    }
+
     public function EliminarUsuario(){
         try{
             if(!isset($_GET['id'])){
