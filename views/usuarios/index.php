@@ -374,6 +374,7 @@ tbody tr:last-child td:last-child {
         <?= include_once 'views/inc/heder.php'; ?>
         <main class="main-content">
             <div class="page-header">
+                <h2><?= $titulo ?></h2>
                 <h4>Hoy es: <?= APP_Date ?> </h4>
             </div>
 

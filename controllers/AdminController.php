@@ -7,6 +7,7 @@ require_once 'model/config.php';
 require_once 'model/usuarios.php';
 require_once 'model/historial.php';
 require_once 'model/ccobrar.php';
+require_once 'model/proveedores.php';
 
 class AdminController 
 {
@@ -18,6 +19,7 @@ class AdminController
     private $clientes;
     private $historial;
     private $ccobrar;
+    private $proveedores;
     public function __construct() 
     {
         $this->iniciarSesion();
@@ -28,7 +30,7 @@ class AdminController
         $this->clientes = new Usuarios();
         $this->historial = new Historial();
         $this->ccobrar = new Ccobrar();
-
+        $this->proveedores = new Proveedores();
     }
     private function iniciarSesion()
     {
@@ -588,6 +590,45 @@ class AdminController
     //Funciones de Proveedores
     public function proveedores(){
         $titulo = 'Proveedores';
+        $proveedores = $this->proveedores->obtenerProveedores();
         require_once 'views/provedor/index.php';
     }
+    public function eliminarProveedor(){
+        try {
+            // Verificar que sea una petición POST
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+                return;
+            }
+
+            // Verificar que el ID existe
+            if (!isset($_POST['id']) || empty($_POST['id'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'ID del proveedor no proporcionado']);
+                return;
+            }
+
+            $id = $_POST['id'];
+            
+            // Validar que el ID sea numérico
+            if (!is_numeric($id)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'ID inválido']);
+                return;
+            }
+
+            // Intentar eliminar el proveedor
+            if ($this->proveedores->eliminarProveedor($id)) {
+                echo json_encode(['success' => true, 'message' => 'Proveedor eliminado exitosamente']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error al eliminar el proveedor']);
+            }
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Error en el servidor: ' . $e->getMessage()]);
+        }
+    }
+    public function addProveedor(){}
 }

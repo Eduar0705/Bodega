@@ -122,6 +122,9 @@ function crearBaseDeDatos() {
                 `email` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
                 `direccion` varchar(255) NOT NULL,
+                `nombre_encargado` varchar(100) NOT NULL,
+                `estado` varchar(100) NOT NULL,
+                `nota` varchar(100) NOT NULL,
                 PRIMARY KEY (`id_proveedor`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
 
