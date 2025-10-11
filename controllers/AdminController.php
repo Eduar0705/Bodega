@@ -234,12 +234,14 @@ class AdminController
         exit;
     }
 
+    //Funciones de Historial de ventas
     public function historial(){
         $titulo = 'Historial de venta';
         $historial = $this->historial->obtenerHistorial();
         require_once 'views/historial/index.php';
     }
 
+    //Funciones de cuestas por cobrar o fiados
     public function cuentas(){
         $titulo = 'Cuentas por cobrar';
         $cuentas = $this->ccobrar->obtenerCC();
@@ -363,51 +365,123 @@ class AdminController
         exit;
     }
 
-    //Funcion de Usuarios o Clientes
+    // Función de Clientes
     public function users(){
-        $titulo = 'Usuarios';
-        $Clientes =  $this->clientes->obtenerUsuarios();
+        $titulo = 'Clientes';
+        $Clientes = $this->clientes->obtenerUsuarios();
 
         if (isset($_POST['btn-add'])) {
             $nombre = trim($_POST['name']);
             $cedula = trim($_POST['cedula']);
             $telefono = trim($_POST['cel']);
 
-            if ($this->clientes->agregarUsuario($nombre, $cedula, $telefono)) {
-                header('Location: ?action=admin&method=users&mensaje=exito');
-                exit();
+            // Validar que los campos no estén vacíos
+            if (empty($nombre) || empty($cedula)) {
+                echo '<script>
+                    Swal.fire({
+                        icon: "error",
+                        title: "Campos Requeridos",
+                        text: "El nombre y la cédula son obligatorios",
+                        confirmButtonColor: "#e74c3c"
+                    });
+                </script>';
             } else {
-                echo '<script>alert("Error al agregar el cliente. Intente nuevamente.")</script>';
+                if ($this->clientes->agregarUsuario($nombre, $cedula, $telefono)) {
+                    echo '<script>
+                        Swal.fire({
+                            icon: "success",
+                            title: "¡Éxito!",
+                            text: "Cliente agregado correctamente",
+                            confirmButtonColor: "#3498db",
+                            timer: 2000,
+                            timerProgressBar: true
+                        }).then(() => {
+                            window.location.href = "?action=admin&method=users";
+                        });
+                    </script>';
+                } else {
+                    echo '<script>
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Error al agregar el cliente. Intente nuevamente.",
+                            confirmButtonColor: "#e74c3c"
+                        });
+                    </script>';
+                }
             }
         }
         require_once 'views/usuarios/index.php';
     }
 
+    public function DeleteCliente(){
+        try {
+            // Verificar que el ID exista en la petición
+            if (!isset($_GET['id']) || empty($_GET['id'])) {
+                echo '<script>
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "ID del cliente no encontrado",
+                        confirmButtonColor: "#e74c3c"
+                    }).then(() => {
+                        window.location.href = "?action=admin&method=users";
+                    });
+                </script>';
+                exit();
+            }
+
+            $id = intval($_GET['id']); // Convertir a entero para seguridad
+
+            // Intentar eliminar el cliente
+            if ($this->clientes->deleteCliente($id)) {
+                echo '<script>
+                    Swal.fire({
+                        icon: "success",
+                        title: "¡Eliminado!",
+                        text: "Cliente eliminado exitosamente",
+                        confirmButtonColor: "#3498db",
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        window.location.href = "?action=admin&method=users";
+                    });
+                </script>';
+            } else {
+                echo '<script>
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "No se pudo eliminar el cliente. Verifique que exista.",
+                        confirmButtonColor: "#e74c3c"
+                    }).then(() => {
+                        window.location.href = "?action=admin&method=users";
+                    });
+                </script>';
+            }
+        } catch (Exception $e) {
+            echo '<script>
+                Swal.fire({
+                    icon: "error",
+                    title: "Error del Servidor",
+                    text: "Ocurrió un error inesperado: ' . $e->getMessage() . '",
+                    confirmButtonColor: "#e74c3c"
+                }).then(() => {
+                    window.location.href = "?action=admin&method=users";
+                });
+            </script>';
+        }
+        
+        // No usar header() después de echo
+        require_once 'views/usuarios/index.php';
+        exit();
+    }
+
+    //Funciones de estadisticas
     public function estadisticas(){
         $titulo = 'Estadisticas';
         require_once 'views/estadisticas/index.php';
     }
-
-    public function EliminarUsuario(){
-        try{
-            if(!isset($_GET['id'])){
-                echo '<script>alert("ID del cliente no encontra a surguido un error")</script>';
-            }
-
-            $id = $_GET['id'];
-            if($this->clientes->eliminarUsuario($id)){
-                echo '<script>alert("Cliente eliminado exitosamente")</script>';
-            }else{
-                echo '<script>alert("Error al eliminar")</script>';
-            }
-        }
-        catch(Exception $e){
-            echo '<script>alert("Error en el servidor")</script>';
-        }
-        header('Location: ?action=admin&method=users');
-        exit();
-    }
-
 
     //Funcion de configuracion
     public function config(){

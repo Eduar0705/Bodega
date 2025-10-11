@@ -10,70 +10,84 @@
     <link rel="shortcut icon" href="<?= APP_Logo ?>" type="image/x-icon">
 </head>
 <style>
+* {
+    box-sizing: border-box;
+}
+
 /* Estilos generales */
 .add, .viewsUser {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 h3 {
     color: #2c3e50;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-tr.no-result {
-    display: none;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #3498db;
+    font-size: 24px;
+    font-weight: 600;
 }
 
 /* Estilos para el formulario */
 .add form {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .add form h3 {
-    grid-column: span 2;
+    grid-column: 1 / -1;
+    margin-bottom: 10px;
 }
 
-.add input[type="text"], #buscar {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.3s;
+.add input[type="text"] {
+    padding: 12px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: #fff;
 }
 
-.add input[type="text"]:focus, #buscar:focus{
+.add input[type="text"]:focus {
     border-color: #3498db;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+    transform: translateY(-2px);
 }
 
 #btn-add {
-    grid-column: span 2;
-    background-color: #3498db;
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
     border: none;
-    padding: 12px;
-    border-radius: 4px;
+    padding: 14px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
-    transition: background-color 0.3s;
+    font-weight: 600;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
 
 #btn-add:hover {
-    background-color: #2980b9;
+    background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+#btn-add:active {
+    transform: translateY(0);
 }
 
 /* Estilos para la tabla */
@@ -81,66 +95,229 @@ tr.no-result {
     margin-top: 30px;
 }
 
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.search-wrapper {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+#buscar {
+    width: 100%;
+    padding: 12px 18px 12px 45px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+#buscar:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    pointer-events: none;
+}
+
+.entries-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.entries-control label {
+    color: #2c3e50;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#entries-select {
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+#entries-select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
 table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 0;
+    background-color: #fff;
 }
 
 thead {
-    background-color: #f8f9fa;
-}
-
-th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+    background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
 }
 
 th {
-    color: #2c3e50;
+    padding: 16px 15px;
+    text-align: left;
+    color: #000000ff;
     font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-tbody tr:hover {
-    background-color: #f5f5f5;
+th:first-child {
+    border-top-left-radius: 8px;
+}
+
+th:last-child {
+    border-top-right-radius: 8px;
+}
+
+td {
+    padding: 14px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+tbody tr {
+    transition: all 0.3s ease;
+}
+
+tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 8px;
 }
 
 /* Estilos para los botones */
 .btn-delete {
-    background-color: #e74c3c;
+    background: #d41c1cff;
     color: white;
     border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
+    padding: 10px 14px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
 .btn-delete:hover {
-    background-color: #c0392b;
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.btn-delete:active {
+    transform: translateY(0);
+}
+
+/* Paginación */
+.pagination-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #ecf0f1;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pagination-info {
+    color: #7f8c8d;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pagination button {
+    padding: 8px 14px;
+    border: 2px solid #e0e0e0;
+    background-color: #fff;
+    color: #2c3e50;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    border-color: #3498db;
+    background-color: #3498db;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination button.active {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-color: #3498db;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
 }
 
 /* Estilos para el mensaje de no hay usuarios */
 .text-muted {
     color: #7f8c8d;
     text-align: center;
-    padding: 30px 0;
+    padding: 50px 20px;
 }
 
 .text-muted i {
     color: #bdc3c7;
+    margin-bottom: 15px;
 }
 
 .text-muted h5 {
-    margin: 10px 0 5px;
-    font-size: 18px;
+    margin: 15px 0 8px;
+    font-size: 20px;
+    color: #34495e;
+    font-weight: 600;
 }
 
 .text-muted p {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
+    color: #95a5a6;
 }
 
 /* Responsive */
@@ -149,14 +326,46 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
     
-    .add form h3,
-    #btn-add {
-        grid-column: span 1;
+    .table-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-wrapper {
+        width: 100%;
+    }
+    
+    .entries-control {
+        justify-content: space-between;
+    }
+    
+    .pagination-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
     }
     
     table {
-        display: block;
-        overflow-x: auto;
+        font-size: 13px;
+    }
+    
+    th, td {
+        padding: 10px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .add, .viewsUser {
+        padding: 15px;
+        margin: 10px;
+    }
+    
+    h3 {
+        font-size: 20px;
     }
 }
 </style>
@@ -165,116 +374,315 @@ tbody tr:hover {
         <?= include_once 'views/inc/heder.php'; ?>
         <main class="main-content">
             <div class="page-header">
-                <h1><?= $titulo ?></h1>
                 <h4>Hoy es: <?= APP_Date ?> </h4>
             </div>
 
             <div class="add">
                 <form action="" method="post">
-                    <h3>Agregar Nuevo cliente</h3>
+                    <h3>Agregar Nuevo Cliente</h3>
                     <input type="text" id="name" name="name" placeholder="Ingrese el nombre del cliente" required>
-                    <input type="text" id="cedula" name="cedula" placeholder="Ingrese la cedula del cliente" required>
-                    <input type="text" id="cel" name="cel" placeholder="Ingrese el telefono del cliente">
-                    <button type="submit" id="btn-add" name="btn-add"> <i class="fas fa-plus"></i> Agregar cliente</button>
+                    <input type="text" id="cedula" name="cedula" placeholder="Ingrese la cédula del cliente" required>
+                    <input type="text" id="cel" name="cel" placeholder="Ingrese el teléfono del cliente">
+                    <button type="submit" id="btn-add" name="btn-add">
+                        <i class="fas fa-plus"></i> Agregar Cliente
+                    </button>
                 </form>
             </div>
             
             <div class="viewsUser">
                 <h3>Clientes Registrados</h3>
-                <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
-                <table id="tabla-clientes">
-                    <thead>
-                        <tr>
-                            <th>Nombre Cliente</th>
-                            <th>Cedula Cliente</th>
-                            <th>Telefono Cliente</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if(!empty($Clientes)): ?>
-                            <?php foreach($Clientes as $info): ?>
+                
+                <div class="table-controls">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="buscar" placeholder="Buscar cliente por nombre, cédula o teléfono...">
+                    </div>
+                    <div class="entries-control">
+                        <label for="entries-select">Mostrar:</label>
+                        <select id="entries-select">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="all">Todos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="tabla-clientes">
+                        <thead>
+                            <tr>
+                                <th>Nombre Cliente</th>
+                                <th>Cédula Cliente</th>
+                                <th>Teléfono Cliente</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($Clientes)): ?>
+                                <?php foreach($Clientes as $info): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($info['nombre_apellido']); ?></td>
+                                        <td><?php echo htmlspecialchars($info['cedula']); ?></td>
+                                        <td><?php echo htmlspecialchars($info['telefono']); ?></td>
+                                        <td>
+                                            <button 
+                                                class="btn btn-sm btn-danger btn-delete"
+                                                title="Eliminar cliente" 
+                                                data-id="<?php echo $info['id_cliente']; ?>">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($info['nombre_apellido']); ?></td>
-                                    <td><?php echo htmlspecialchars($info['cedula']); ?></td>
-                                    <td><?php echo htmlspecialchars($info['telefono']); ?></td>
-                                    <td>
-                                        <button 
-                                            class="btn btn-sm btn-danger btn-delete"
-                                            id="btn-eliminar" 
-                                            title="Eliminar cliente" 
-                                            data-id="<?php echo $info['id_cliente']; ?>">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
+                                    <td colspan="4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-users fa-3x"></i>
+                                            <h5>No hay Clientes registrados</h5>
+                                            <p>Comienza agregando tu primer cliente.</p>
+                                        </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="8" style="text-align: center;">
-                                    <div class="text-muted">
-                                        <i class="fas fa-boxes fa-3x mb-3"></i>
-                                        <h5>No hay Usuarios registrados</h5>
-                                        <p>No se encontraron productos registrados.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-wrapper">
+                    <div class="pagination-info" id="pagination-info"></div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
             </div>
         </main>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Script de búsqueda y paginación -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const buscarInput = document.getElementById('buscar');
+            const entriesSelect = document.getElementById('entries-select');
             const tabla = document.getElementById('tabla-clientes');
-            const filas = Array.from(tabla.querySelectorAll('tbody tr')).filter(tr => !tr.querySelector('th'));
+            const tbody = tabla.querySelector('tbody');
+            const paginationInfo = document.getElementById('pagination-info');
+            const paginationContainer = document.getElementById('pagination');
             
-            function buscarClientes() {
+            let todasLasFilas = Array.from(tbody.querySelectorAll('tr')).filter(tr => 
+                !tr.querySelector('.text-muted')
+            );
+            
+            let filasFiltradas = [...todasLasFilas];
+            let paginaActual = 1;
+            let filasPorPagina = 10;
+
+            function filtrarClientes() {
                 const textoBusqueda = buscarInput.value.toLowerCase().trim();
-                let resultadosVisibles = false;
                 
-                filas.forEach(fila => {
-                    const celdas = fila.querySelectorAll('td:not(:last-child)'); // Excluir columna de acciones
-                    let coincide = textoBusqueda === '';
-                    
-                    if (!coincide) {
-                        coincide = Array.from(celdas).some(celda => 
+                if (textoBusqueda === '') {
+                    filasFiltradas = [...todasLasFilas];
+                } else {
+                    filasFiltradas = todasLasFilas.filter(fila => {
+                        const celdas = fila.querySelectorAll('td:not(:last-child)');
+                        return Array.from(celdas).some(celda => 
                             celda.textContent.toLowerCase().includes(textoBusqueda)
                         );
+                    });
+                }
+                
+                paginaActual = 1;
+                mostrarPagina();
+            }
+
+            function mostrarPagina() {
+                // Limpiar tbody
+                tbody.innerHTML = '';
+                
+                // Verificar si hay filas para mostrar
+                if (filasFiltradas.length === 0) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td colspan="4">
+                            <div class="text-muted">
+                                <i class="fas fa-search fa-3x"></i>
+                                <h5>No se encontraron resultados</h5>
+                                <p>No hay clientes que coincidan con tu búsqueda.</p>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                    paginationInfo.textContent = '';
+                    paginationContainer.innerHTML = '';
+                    return;
+                }
+                
+                // Calcular paginación
+                const totalFilas = filasFiltradas.length;
+                const totalPaginas = filasPorPagina === 'all' ? 1 : Math.ceil(totalFilas / filasPorPagina);
+                
+                // Ajustar página actual si es necesaria
+                if (paginaActual > totalPaginas) {
+                    paginaActual = totalPaginas;
+                }
+                
+                // Calcular índices
+                let inicio, fin;
+                if (filasPorPagina === 'all') {
+                    inicio = 0;
+                    fin = totalFilas;
+                } else {
+                    inicio = (paginaActual - 1) * filasPorPagina;
+                    fin = Math.min(inicio + filasPorPagina, totalFilas);
+                }
+                
+                // Mostrar filas de la página actual
+                for (let i = inicio; i < fin; i++) {
+                    tbody.appendChild(filasFiltradas[i].cloneNode(true));
+                }
+                
+                // Reactivar eventos de eliminar
+                activarBotonesEliminar();
+                
+                // Actualizar información de paginación
+                paginationInfo.textContent = `Mostrando ${inicio + 1} a ${fin} de ${totalFilas} clientes`;
+                
+                // Generar botones de paginación
+                generarPaginacion(totalPaginas);
+            }
+
+            function generarPaginacion(totalPaginas) {
+                paginationContainer.innerHTML = '';
+                
+                if (totalPaginas <= 1) return;
+                
+                // Botón anterior
+                const btnPrev = document.createElement('button');
+                btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                btnPrev.disabled = paginaActual === 1;
+                btnPrev.addEventListener('click', () => {
+                    if (paginaActual > 1) {
+                        paginaActual--;
+                        mostrarPagina();
+                    }
+                });
+                paginationContainer.appendChild(btnPrev);
+                
+                // Botones de páginas
+                const maxBotones = 5;
+                let inicioPagina = Math.max(1, paginaActual - Math.floor(maxBotones / 2));
+                let finPagina = Math.min(totalPaginas, inicioPagina + maxBotones - 1);
+                
+                if (finPagina - inicioPagina < maxBotones - 1) {
+                    inicioPagina = Math.max(1, finPagina - maxBotones + 1);
+                }
+                
+                if (inicioPagina > 1) {
+                    const btn1 = document.createElement('button');
+                    btn1.textContent = '1';
+                    btn1.addEventListener('click', () => {
+                        paginaActual = 1;
+                        mostrarPagina();
+                    });
+                    paginationContainer.appendChild(btn1);
+                    
+                    if (inicioPagina > 2) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationContainer.appendChild(btnDots);
+                    }
+                }
+                
+                for (let i = inicioPagina; i <= finPagina; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    if (i === paginaActual) {
+                        btn.classList.add('active');
+                    }
+                    btn.addEventListener('click', () => {
+                        paginaActual = i;
+                        mostrarPagina();
+                    });
+                    paginationContainer.appendChild(btn);
+                }
+                
+                if (finPagina < totalPaginas) {
+                    if (finPagina < totalPaginas - 1) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationContainer.appendChild(btnDots);
                     }
                     
-                    fila.style.display = coincide ? '' : 'none';
-                    if (coincide) resultadosVisibles = true;
-                });
-                
-                // Manejar mensaje de no resultados
-                const mensajeExistente = tabla.querySelector('#mensaje-no-resultados');
-                const tbody = tabla.querySelector('tbody');
-                
-                if (!resultadosVisibles && textoBusqueda !== '') {
-                    if (!mensajeExistente) {
-                        const tr = document.createElement('tr');
-                        tr.id = 'mensaje-no-resultados';
-                        tr.innerHTML = `
-                            <td colspan="4" style="text-align: center;">
-                                <div class="text-muted">
-                                    <i class="fas fa-search fa-3x mb-3"></i>
-                                    <h5>No se encontraron resultados</h5>
-                                    <p>No hay clientes que coincidan con "${textoBusqueda}"</p>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                } else if (mensajeExistente) {
-                    mensajeExistente.remove();
+                    const btnLast = document.createElement('button');
+                    btnLast.textContent = totalPaginas;
+                    btnLast.addEventListener('click', () => {
+                        paginaActual = totalPaginas;
+                        mostrarPagina();
+                    });
+                    paginationContainer.appendChild(btnLast);
                 }
+                
+                // Botón siguiente
+                const btnNext = document.createElement('button');
+                btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                btnNext.disabled = paginaActual === totalPaginas;
+                btnNext.addEventListener('click', () => {
+                    if (paginaActual < totalPaginas) {
+                        paginaActual++;
+                        mostrarPagina();
+                    }
+                });
+                paginationContainer.appendChild(btnNext);
             }
-            
-            // Debounce para mejorar performance en búsquedas rápidas
+
+            function activarBotonesEliminar() {
+                tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const id = this.getAttribute('data-id');
+
+                        Swal.fire({
+                            title: '¿Estás seguro?',
+                            text: "Esta acción no se puede deshacer.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#e74c3c',
+                            cancelButtonColor: '#95a5a6',
+                            confirmButtonText: 'Sí, eliminar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Realizar la eliminación por AJAX
+                                fetch(`?action=admin&method=DeleteCliente&id=${id}`)
+                                    .then(response => response.ok ? response.text() : Promise.reject())
+                                    .then(() => {
+                                        Swal.fire({
+                                            title: 'Eliminado',
+                                            text: 'El cliente se eliminó con éxito.',
+                                            icon: 'success',
+                                            confirmButtonColor: '#3498db'
+                                        }).then(() => {
+                                            window.location.reload();
+                                        });
+                                    })
+                                    .catch(() => {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: 'No se pudo eliminar el cliente.',
+                                            icon: 'error',
+                                            confirmButtonColor: '#e74c3c'
+                                        });
+                                    });
+                            }
+                        });
+                    });
+                });
+            }
+
+            // Debounce para búsqueda
             function debounce(func, wait) {
                 let timeout;
                 return function() {
@@ -283,37 +691,19 @@ tbody tr:hover {
                     timeout = setTimeout(() => func.apply(context, args), wait);
                 };
             }
+
+            // Event listeners
+            buscarInput.addEventListener('input', debounce(filtrarClientes, 300));
             
-            buscarInput.addEventListener('input', debounce(buscarClientes, 300));
-        });
-    </script>
-    <!-- Eliminar -->
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault(); // Previene comportamiento por defecto
-
-                const id = this.getAttribute('data-id');
-
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "Esta acción no se puede deshacer.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Redirige con el ID al método eliminar del controlador
-                        window.location.href = `?action=admin&method=EliminarUsuario&id=${id}`;
-                    }
-                });
+            entriesSelect.addEventListener('change', function() {
+                filasPorPagina = this.value === 'all' ? 'all' : parseInt(this.value);
+                paginaActual = 1;
+                mostrarPagina();
             });
+
+            // Inicializar
+            mostrarPagina();
         });
-    });
     </script>
 </body>
 </html>

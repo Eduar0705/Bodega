@@ -12,7 +12,7 @@
 /* Estilos generales */
 .add, .viewsUser {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
     background-color: #fff;
@@ -31,7 +31,7 @@ tr.no-result {
     display: none;
 }
 
-/* NUEVO: Contenedor de filtros */
+/* Contenedor de filtros */
 .filter-section {
     margin-bottom: 20px;
     display: flex;
@@ -87,7 +87,7 @@ tr.no-result {
     background-color: #2980b9;
 }
 
-/* NUEVO: Botón limpiar */
+/* Botón limpiar */
 .btn-limpiar {
     background-color: #95a5a6;
     color: white;
@@ -106,6 +106,10 @@ tr.no-result {
 /* Estilos para la tabla */
 .viewsUser {
     margin-top: 30px;
+}
+
+.table-container {
+    overflow-x: auto;
 }
 
 table {
@@ -127,6 +131,29 @@ th, td {
 th {
     color: #2c3e50;
     font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+th:hover {
+    background-color: #e9ecef;
+}
+
+th.sortable::after {
+    content: ' ⇅';
+    opacity: 0.3;
+    font-size: 0.8em;
+}
+
+th.sort-asc::after {
+    content: ' ▲';
+    opacity: 1;
+}
+
+th.sort-desc::after {
+    content: ' ▼';
+    opacity: 1;
 }
 
 tbody tr:hover {
@@ -155,6 +182,81 @@ tbody tr:hover {
 
 .btn-info:hover {
     background-color: #486466ff;
+}
+
+/* Controles de paginación */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-info label {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.pagination-info select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: white;
+}
+
+.pagination-info select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.pagination-buttons button:hover:not(:disabled) {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.pagination-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-buttons button.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.results-info {
+    font-size: 14px;
+    color: #7f8c8d;
 }
 
 /* Estilos para el mensaje de no hay usuarios */
@@ -197,9 +299,14 @@ tbody tr:hover {
         width: 100%;
     }
     
-    table {
-        display: block;
-        overflow-x: auto;
+    .pagination-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
     }
 }
 </style>
@@ -215,7 +322,7 @@ tbody tr:hover {
             <div class="viewsUser">
                 <h3>Historial de ventas</h3>
                 
-                <!-- NUEVO: Sección de filtros -->
+                <!-- Sección de filtros -->
                 <div class="filter-section">
                     <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
                     <input type="date" name="fechaInicio" id="fechaInicio" placeholder="Fecha Inicio">
@@ -225,50 +332,67 @@ tbody tr:hover {
                     </button>
                 </div>
                 
-                <table id="tabla-clientes">
-                    <thead>
-                        <tr>
-                            <th>Nombre Cliente</th>
-                            <th>Metodo de Pago</th>
-                            <th>Pago / Credito</th>
-                            <th>Total $</th>
-                            <th>Productos</th>
-                            <th>Fecha</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if(!empty($historial)): ?>
-                            <?php foreach($historial as $info): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($info['cliente']); ?></td>
-                                    <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
-                                    <td><?php echo htmlspecialchars($info['tipo_venta']); ?></td>
-                                    <td><?php echo number_format($info['total_usd'],2,',','.'); ?></td>
-                                    <td>
-                                        <button 
-                                            class="btn btn-info btn-sm btn-productos" 
-                                            type="button"
-                                            data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
-                                            title="Ver productos vendidos">
-                                            <i class="fas fa-eye"></i> Ver
-                                        </button>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($info['fecha']); ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                <div class="table-container">
+                    <table id="tabla-clientes">
+                        <thead>
                             <tr>
-                                <td colspan="6" style="text-align: center;">
-                                    <div class="text-muted">
-                                        <i class="fas fa-boxes fa-3x mb-3"></i>
-                                        <h5>No hay Historial de Ventas</h5>
-                                        <p>No se encontró un historial registrado.</p>
-                                    </div>
-                                </td>
+                                <th class="sortable" data-column="0">Nombre Cliente</th>
+                                <th class="sortable" data-column="1">Método de Pago</th>
+                                <th class="sortable" data-column="2">Pago / Crédito</th>
+                                <th class="sortable" data-column="3">Total $</th>
+                                <th>Productos</th>
+                                <th class="sortable" data-column="5">Fecha</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($historial)): ?>
+                                <?php foreach($historial as $info): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($info['cliente']); ?></td>
+                                        <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
+                                        <td><?php echo htmlspecialchars($info['tipo_venta']); ?></td>
+                                        <td data-value="<?php echo $info['total_usd']; ?>"><?php echo number_format($info['total_usd'],2,',','.'); ?></td>
+                                        <td>
+                                            <button 
+                                                class="btn btn-info btn-sm btn-productos" 
+                                                type="button"
+                                                data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
+                                                title="Ver productos vendidos">
+                                                <i class="fas fa-eye"></i> Ver
+                                            </button>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($info['fecha']); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr id="no-data-row">
+                                    <td colspan="6" style="text-align: center;">
+                                        <div class="text-muted">
+                                            <i class="fas fa-boxes fa-3x mb-3"></i>
+                                            <h5>No hay Historial de Ventas</h5>
+                                            <p>No se encontró un historial registrado.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Controles de paginación -->
+                <div class="pagination-controls">
+                    <div class="pagination-info">
+                        <label for="registrosPorPagina">Mostrar:</label>
+                        <select id="registrosPorPagina">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="all">Todos</option>
+                        </select>
+                        <span class="results-info" id="resultsInfo"></span>
+                    </div>
+                    <div class="pagination-buttons" id="paginationButtons"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -333,7 +457,7 @@ tbody tr:hover {
         });
     </script>
 
-    <!-- NUEVO: Script de búsqueda y filtros -->
+    <!-- Script de búsqueda, filtros, ordenamiento y paginación -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let buscarInput = document.getElementById('buscar');
@@ -341,23 +465,27 @@ tbody tr:hover {
             let fechaFinInput = document.getElementById('fechaFin');
             let btnLimpiar = document.getElementById('btn-limpiar');
             let tabla = document.getElementById('tabla-clientes');
-            let filas = tabla.querySelectorAll('tbody tr');
+            let tbody = tabla.querySelector('tbody');
+            let todasLasFilas = Array.from(tbody.querySelectorAll('tr:not(#no-data-row)'));
+            let registrosPorPaginaSelect = document.getElementById('registrosPorPagina');
+            let paginationButtons = document.getElementById('paginationButtons');
+            let resultsInfo = document.getElementById('resultsInfo');
             
+            let paginaActual = 1;
+            let registrosPorPagina = 5;
+            let filasVisibles = [];
+            let ordenActual = { columna: null, direccion: 'asc' };
+            
+            // Función para filtrar la tabla
             function filtrarTabla() {
                 const textoBusqueda = buscarInput.value.toLowerCase().trim();
                 const fechaInicio = fechaInicioInput.value;
                 const fechaFin = fechaFinInput.value;
-                let resultadosVisibles = false;
                 
-                filas.forEach(fila => {
-                    // Evitar procesar fila de "no hay datos"
-                    if (fila.querySelector('.text-muted')) {
-                        return;
-                    }
-                    
+                filasVisibles = todasLasFilas.filter(fila => {
                     const celdas = fila.querySelectorAll('td');
                     const nombreCliente = celdas[0].textContent.toLowerCase();
-                    const fechaVenta = celdas[5].textContent.trim(); // La fecha está en la columna 6
+                    const fechaVenta = celdas[5].textContent.trim();
                     
                     let coincide = true;
                     
@@ -373,35 +501,182 @@ tbody tr:hover {
                         const fin = new Date(fechaFin);
                         coincide = (fecha >= inicio && fecha <= fin);
                     }
-
-                    fila.style.display = coincide ? '' : 'none';
-                    if (coincide) resultadosVisibles = true;
+                    
+                    return coincide;
                 });
                 
-                // Manejar mensaje de no resultados
-                const mensajeExistente = tabla.querySelector('#mensaje-no-resultados');
-                const tbody = tabla.querySelector('tbody');
-                
-                if (!resultadosVisibles && (textoBusqueda !== '' || (fechaInicio && fechaFin))) {
-                    if (!mensajeExistente) {
-                        const tr = document.createElement('tr');
-                        tr.id = 'mensaje-no-resultados';
-                        tr.innerHTML = `
-                            <td colspan="6" style="text-align: center;">
-                                <div class="text-muted">
-                                    <i class="fas fa-search fa-3x mb-3"></i>
-                                    <h5>No se encontraron resultados</h5>
-                                    <p>No hay registros que coincidan con los filtros aplicados</p>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                } else if (mensajeExistente) {
-                    mensajeExistente.remove();
-                }
+                paginaActual = 1;
+                mostrarPagina();
             }
-
+            
+            // Función para ordenar la tabla
+            function ordenarTabla(columna) {
+                const headers = tabla.querySelectorAll('th.sortable');
+                
+                if (ordenActual.columna === columna) {
+                    ordenActual.direccion = ordenActual.direccion === 'asc' ? 'desc' : 'asc';
+                } else {
+                    ordenActual.columna = columna;
+                    ordenActual.direccion = 'asc';
+                }
+                
+                // Actualizar estilos de los encabezados
+                headers.forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                });
+                const headerActual = tabla.querySelector(`th[data-column="${columna}"]`);
+                headerActual.classList.add(ordenActual.direccion === 'asc' ? 'sort-asc' : 'sort-desc');
+                
+                filasVisibles.sort((a, b) => {
+                    let valorA, valorB;
+                    
+                    if (columna === 3) { // Columna Total $
+                        valorA = parseFloat(a.querySelectorAll('td')[columna].getAttribute('data-value'));
+                        valorB = parseFloat(b.querySelectorAll('td')[columna].getAttribute('data-value'));
+                    } else if (columna === 5) { // Columna Fecha
+                        valorA = new Date(a.querySelectorAll('td')[columna].textContent);
+                        valorB = new Date(b.querySelectorAll('td')[columna].textContent);
+                    } else {
+                        valorA = a.querySelectorAll('td')[columna].textContent.toLowerCase();
+                        valorB = b.querySelectorAll('td')[columna].textContent.toLowerCase();
+                    }
+                    
+                    if (valorA < valorB) return ordenActual.direccion === 'asc' ? -1 : 1;
+                    if (valorA > valorB) return ordenActual.direccion === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
+                mostrarPagina();
+            }
+            
+            // Función para mostrar la página actual
+            function mostrarPagina() {
+                // Ocultar todas las filas
+                todasLasFilas.forEach(fila => fila.style.display = 'none');
+                
+                // Remover mensaje de no resultados si existe
+                const mensajeNoResultados = tbody.querySelector('#mensaje-no-resultados');
+                if (mensajeNoResultados) mensajeNoResultados.remove();
+                
+                if (filasVisibles.length === 0) {
+                    // Mostrar mensaje de no resultados
+                    const tr = document.createElement('tr');
+                    tr.id = 'mensaje-no-resultados';
+                    tr.innerHTML = `
+                        <td colspan="6" style="text-align: center;">
+                            <div class="text-muted">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <h5>No se encontraron resultados</h5>
+                                <p>No hay registros que coincidan con los filtros aplicados</p>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                    paginationButtons.innerHTML = '';
+                    resultsInfo.textContent = 'Mostrando 0 de 0 registros';
+                    return;
+                }
+                
+                const totalPaginas = registrosPorPagina === 'all' ? 1 : Math.ceil(filasVisibles.length / registrosPorPagina);
+                const inicio = registrosPorPagina === 'all' ? 0 : (paginaActual - 1) * registrosPorPagina;
+                const fin = registrosPorPagina === 'all' ? filasVisibles.length : inicio + registrosPorPagina;
+                
+                // Mostrar filas de la página actual
+                for (let i = inicio; i < fin && i < filasVisibles.length; i++) {
+                    filasVisibles[i].style.display = '';
+                }
+                
+                // Actualizar información de resultados
+                resultsInfo.textContent = `Mostrando ${inicio + 1}-${Math.min(fin, filasVisibles.length)} de ${filasVisibles.length} registros`;
+                
+                // Crear botones de paginación
+                crearBotonesPaginacion(totalPaginas);
+            }
+            
+            // Función para crear botones de paginación
+            function crearBotonesPaginacion(totalPaginas) {
+                paginationButtons.innerHTML = '';
+                
+                if (totalPaginas <= 1) return;
+                
+                // Botón anterior
+                const btnAnterior = document.createElement('button');
+                btnAnterior.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                btnAnterior.disabled = paginaActual === 1;
+                btnAnterior.addEventListener('click', () => {
+                    if (paginaActual > 1) {
+                        paginaActual--;
+                        mostrarPagina();
+                    }
+                });
+                paginationButtons.appendChild(btnAnterior);
+                
+                // Botones de páginas
+                let inicio = Math.max(1, paginaActual - 2);
+                let fin = Math.min(totalPaginas, inicio + 4);
+                
+                if (fin - inicio < 4) {
+                    inicio = Math.max(1, fin - 4);
+                }
+                
+                if (inicio > 1) {
+                    const btn1 = document.createElement('button');
+                    btn1.textContent = '1';
+                    btn1.addEventListener('click', () => {
+                        paginaActual = 1;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btn1);
+                    
+                    if (inicio > 2) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationButtons.appendChild(btnDots);
+                    }
+                }
+                
+                for (let i = inicio; i <= fin; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    if (i === paginaActual) btn.classList.add('active');
+                    btn.addEventListener('click', () => {
+                        paginaActual = i;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btn);
+                }
+                
+                if (fin < totalPaginas) {
+                    if (fin < totalPaginas - 1) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationButtons.appendChild(btnDots);
+                    }
+                    
+                    const btnUltima = document.createElement('button');
+                    btnUltima.textContent = totalPaginas;
+                    btnUltima.addEventListener('click', () => {
+                        paginaActual = totalPaginas;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btnUltima);
+                }
+                
+                // Botón siguiente
+                const btnSiguiente = document.createElement('button');
+                btnSiguiente.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                btnSiguiente.disabled = paginaActual === totalPaginas;
+                btnSiguiente.addEventListener('click', () => {
+                    if (paginaActual < totalPaginas) {
+                        paginaActual++;
+                        mostrarPagina();
+                    }
+                });
+                paginationButtons.appendChild(btnSiguiente);
+            }
+            
             // Función para limpiar filtros
             function limpiarFiltros() {
                 buscarInput.value = '';
@@ -409,12 +684,30 @@ tbody tr:hover {
                 fechaFinInput.value = '';
                 filtrarTabla();
             }
-
-            // Agregar eventos
+            
+            // Event listeners
             buscarInput.addEventListener('input', filtrarTabla);
             fechaInicioInput.addEventListener('change', filtrarTabla);
             fechaFinInput.addEventListener('change', filtrarTabla);
             btnLimpiar.addEventListener('click', limpiarFiltros);
+            
+            registrosPorPaginaSelect.addEventListener('change', function() {
+                registrosPorPagina = this.value === 'all' ? 'all' : parseInt(this.value);
+                paginaActual = 1;
+                mostrarPagina();
+            });
+            
+            // Agregar eventos de clic a los encabezados ordenables
+            tabla.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const columna = parseInt(this.getAttribute('data-column'));
+                    ordenarTabla(columna);
+                });
+            });
+            
+            // Inicializar
+            filasVisibles = [...todasLasFilas];
+            mostrarPagina();
         });
     </script>
 </body>

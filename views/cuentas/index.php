@@ -68,7 +68,6 @@
     cursor: pointer;
     font-size: 14px;
     transition: background-color 0.3s;
-    margin-left: 10px;
 }
 
 .btn-limpiar:hover {
@@ -108,6 +107,8 @@ h3 {
     border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.3s;
+    flex: 1;
+    min-width: 150px;
 }
 
 .add input[type="text"]:focus, #buscar:focus, #fechaInicio:focus, #fechaFin:focus {
@@ -119,6 +120,10 @@ h3 {
 /* Estilos para la tabla */
 .viewsUser {
     margin-top: 30px;
+}
+
+.table-container {
+    overflow-x: auto;
 }
 
 table {
@@ -140,6 +145,29 @@ th, td {
 th {
     color: #2c3e50;
     font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+th:hover:not(.no-sort) {
+    background-color: #e9ecef;
+}
+
+th.sortable::after {
+    content: ' ⇅';
+    opacity: 0.3;
+    font-size: 0.8em;
+}
+
+th.sort-asc::after {
+    content: ' ▲';
+    opacity: 1;
+}
+
+th.sort-desc::after {
+    content: ' ▼';
+    opacity: 1;
 }
 
 tbody tr:hover {
@@ -151,6 +179,81 @@ tbody tr:hover {
 tbody tr.pagado {
     opacity: 0.6;
     background-color: #d5f4e6;
+}
+
+/* Controles de paginación */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-info label {
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.pagination-info select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: white;
+}
+
+.pagination-info select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+.pagination-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.pagination-buttons button:hover:not(:disabled) {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.pagination-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-buttons button.active {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.results-info {
+    font-size: 14px;
+    color: #7f8c8d;
 }
 
 /* Estilos para el mensaje de no hay datos */
@@ -200,12 +303,19 @@ tbody tr.pagado {
     .filter-section input,
     .filter-section button {
         width: 100%;
-        margin-left: 0 !important;
+    }
+    
+    .pagination-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .pagination-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
     }
     
     table {
-        display: block;
-        overflow-x: auto;
         font-size: 12px;
     }
     
@@ -237,90 +347,107 @@ tbody tr.pagado {
                 </div>
 
                 <!-- Tabla -->
-                <table id="tabla-clientes">
-                    <thead>
-                        <tr>
-                            <th>Nombre Cliente</th>
-                            <th>Estado</th>
-                            <th>Método de Pago</th>
-                            <th>Total $</th>
-                            <th>Productos</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if(!empty($cuentas)): ?>
-                            <?php foreach($cuentas as $info): ?>
-                                <?php 
-                                    $total = floatval($info['total_usd']);
-                                    $estado = 'pendiente';
-                                    $estadoTexto = 'Pendiente';
-                                    $claseFila = '';
-                                    
-                                    if (isset($info['tipo_venta'])) {
-                                        if ($info['tipo_venta'] === 'pagado' || $total <= 0) {
-                                            $estado = 'pagado';
-                                            $estadoTexto = 'Pagado';
-                                            $claseFila = 'pagado';
-                                        } elseif ($info['tipo_venta'] === 'parcial') {
-                                            $estado = 'parcial';
-                                            $estadoTexto = 'Parcial';
+                <div class="table-container">
+                    <table id="tabla-clientes">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-column="0">Nombre Cliente</th>
+                                <th class="sortable" data-column="1">Estado</th>
+                                <th class="sortable" data-column="2">Método de Pago</th>
+                                <th class="sortable" data-column="3">Total $</th>
+                                <th class="no-sort">Productos</th>
+                                <th class="sortable" data-column="5">Fecha</th>
+                                <th class="no-sort">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($cuentas)): ?>
+                                <?php foreach($cuentas as $info): ?>
+                                    <?php 
+                                        $total = floatval($info['total_usd']);
+                                        $estado = 'pendiente';
+                                        $estadoTexto = 'Pendiente';
+                                        $claseFila = '';
+                                        
+                                        if (isset($info['tipo_venta'])) {
+                                            if ($info['tipo_venta'] === 'pagado' || $total <= 0) {
+                                                $estado = 'pagado';
+                                                $estadoTexto = 'Pagado';
+                                                $claseFila = 'pagado';
+                                            } elseif ($info['tipo_venta'] === 'parcial') {
+                                                $estado = 'parcial';
+                                                $estadoTexto = 'Parcial';
+                                            }
                                         }
-                                    }
-                                ?>
-                                <tr class="<?= $claseFila ?>" data-total="<?= $total ?>">
-                                    <td><?php echo htmlspecialchars($info['cliente']); ?></td>
-                                    <td>
-                                        <span class="badge badge-<?= $estado ?>">
-                                            <?= $estadoTexto ?>
-                                        </span>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
-                                    <td data-valor="<?= $total ?>">
-                                        $<?php echo number_format($total, 2, '.', ','); ?>
-                                    </td>
-                                    <td>
-                                        <button 
-                                            class="btn btn-info btn-sm btn-productos" 
-                                            type="button"
-                                            data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
-                                            title="Ver productos vendidos">
-                                            <i class="fas fa-eye"></i> Ver
-                                        </button>
-                                    </td>
-                                    <td><?php echo htmlspecialchars($info['fecha']); ?></td>
-                                    <td>
-                                        <?php if ($total > 0): ?>
-                                            <button 
-                                                class="btn btn-sm btn-warning btn-descontar"
-                                                title="Registrar pago" 
-                                                data-id="<?php echo $info['id_historial']; ?>"
-                                                data-monto="<?php echo $total; ?>"
-                                                data-cliente="<?php echo htmlspecialchars($info['cliente']); ?>">
-                                                <i class="fas fa-dollar-sign"></i>
-                                            </button>
-                                        <?php else: ?>
-                                            <span class="text-muted" title="Cuenta saldada">
-                                                <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                                    ?>
+                                    <tr class="<?= $claseFila ?>" data-total="<?= $total ?>">
+                                        <td><?php echo htmlspecialchars($info['cliente']); ?></td>
+                                        <td>
+                                            <span class="badge badge-<?= $estado ?>">
+                                                <?= $estadoTexto ?>
                                             </span>
-                                        <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($info['tipo_pago']); ?></td>
+                                        <td data-valor="<?= $total ?>">
+                                            $<?php echo number_format($total, 2, '.', ','); ?>
+                                        </td>
+                                        <td>
+                                            <button 
+                                                class="btn btn-info btn-sm btn-productos" 
+                                                type="button"
+                                                data-productos='<?php echo htmlspecialchars($info['productos_vendidos'], ENT_QUOTES, 'UTF-8'); ?>'
+                                                title="Ver productos vendidos">
+                                                <i class="fas fa-eye"></i> Ver
+                                            </button>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($info['fecha']); ?></td>
+                                        <td>
+                                            <?php if ($total > 0): ?>
+                                                <button 
+                                                    class="btn btn-sm btn-warning btn-descontar"
+                                                    title="Registrar pago" 
+                                                    data-id="<?php echo $info['id_historial']; ?>"
+                                                    data-monto="<?php echo $total; ?>"
+                                                    data-cliente="<?php echo htmlspecialchars($info['cliente']); ?>">
+                                                    <i class="fas fa-dollar-sign"></i>
+                                                </button>
+                                            <?php else: ?>
+                                                <span class="text-muted" title="Cuenta saldada">
+                                                    <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr id="no-data-row">
+                                    <td colspan="7" style="text-align: center;">
+                                        <div class="text-muted">
+                                            <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                                            <h5>No hay Cuentas por Cobrar</h5>
+                                            <p>No se encontraron cuentas pendientes registradas.</p>
+                                        </div>
                                     </td>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="7" style="text-align: center;">
-                                    <div class="text-muted">
-                                        <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
-                                        <h5>No hay Cuentas por Cobrar</h5>
-                                        <p>No se encontraron cuentas pendientes registradas.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Controles de paginación -->
+                <div class="pagination-controls">
+                    <div class="pagination-info">
+                        <label for="registrosPorPagina">Mostrar:</label>
+                        <select id="registrosPorPagina">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="all">Todos</option>
+                        </select>
+                        <span class="results-info" id="resultsInfo"></span>
+                    </div>
+                    <div class="pagination-buttons" id="paginationButtons"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -393,13 +520,6 @@ tbody tr.pagado {
                                     <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL:</td>
                                     <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">$${totalGeneral.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                                 </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                `;
-                html += `
-                            </tbody>
-                            <tfoot style="border-top: 2px solid #ddd;">
                                 <tr>
                                     <td colspan="4" style="padding: 10px; text-align: right; font-weight: bold;">TOTAL bs:</td>
                                     <td style="padding: 10px; text-align: right; font-weight: bold; color: #2c3e50;">${(totalGeneral * precio_usd).toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})} bs</td>
@@ -422,7 +542,6 @@ tbody tr.pagado {
 
     <!-- Script para botón descontar -->
     <script>
-        // Script para botón descontar - VERSIÓN CORREGIDA
         document.querySelectorAll('.btn-descontar').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const idHistorial = this.getAttribute('data-id');
@@ -544,13 +663,11 @@ tbody tr.pagado {
                             montoUsd = montoBs / precio_usd;
                         }
                         
-                        // Permitir un pequeño margen de error (0.01)
                         if (montoUsd > (montoTotal + 0.01)) {
                             Swal.showValidationMessage(`El monto no puede ser mayor a $${montoTotal.toFixed(2)}`);
                             return false;
                         }
                         
-                        // Preparar datos
                         const datosEnvio = { 
                             id_historial: parseInt(idHistorial),
                             monto: parseFloat(montoUsd.toFixed(2))
@@ -560,7 +677,6 @@ tbody tr.pagado {
                         console.log('URL:', '?action=admin&method=descontarMonto');
                         console.log('Datos:', datosEnvio);
                         
-                        // Realizar el fetch
                         return fetch('?action=admin&method=descontarMonto', {
                             method: 'POST',
                             headers: {
@@ -574,11 +690,9 @@ tbody tr.pagado {
                             console.log('Status:', response.status);
                             console.log('OK:', response.ok);
                             
-                            // Leer el texto de la respuesta
                             return response.text().then(text => {
                                 console.log('Respuesta texto:', text);
                                 
-                                // Intentar parsear JSON
                                 try {
                                     const data = JSON.parse(text);
                                     console.log('Respuesta parseada:', data);
@@ -596,7 +710,6 @@ tbody tr.pagado {
                                     console.error('Error parseando JSON:', parseError);
                                     console.error('Texto recibido:', text);
                                     
-                                    // Buscar si hay HTML en la respuesta (error común)
                                     if (text.includes('<!DOCTYPE') || text.includes('<html')) {
                                         throw new Error('El servidor devolvió HTML en lugar de JSON. Revisa que no haya errores PHP o salidas antes del JSON.');
                                     }
@@ -633,7 +746,7 @@ tbody tr.pagado {
         });
     </script>
 
-    <!-- Script de búsqueda y filtros -->
+    <!-- Script de búsqueda, filtros, ordenamiento y paginación -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const buscarInput = document.getElementById('buscar');
@@ -641,34 +754,36 @@ tbody tr.pagado {
             const fechaFinInput = document.getElementById('fechaFin');
             const btnLimpiar = document.getElementById('btn-limpiar');
             const tabla = document.getElementById('tabla-clientes');
-            const filas = tabla.querySelectorAll('tbody tr:not(.no-data)');
+            const tbody = tabla.querySelector('tbody');
+            const todasLasFilas = Array.from(tbody.querySelectorAll('tr:not(#no-data-row)'));
+            const registrosPorPaginaSelect = document.getElementById('registrosPorPagina');
+            const paginationButtons = document.getElementById('paginationButtons');
+            const resultsInfo = document.getElementById('resultsInfo');
             
-            // Función para normalizar fechas (convierte DD/MM/YYYY o YYYY-MM-DD a objeto Date)
+            let paginaActual = 1;
+            let registrosPorPagina = 5;
+            let filasVisibles = [];
+            let ordenActual = { columna: null, direccion: 'asc' };
+            
+            // Función para normalizar fechas
             function normalizarFecha(fechaStr) {
-                // Si está en formato DD/MM/YYYY
                 if (fechaStr.includes('/')) {
                     const partes = fechaStr.split('/');
                     return new Date(partes[2], partes[1] - 1, partes[0]);
                 }
-                // Si está en formato YYYY-MM-DD
                 return new Date(fechaStr);
             }
             
-            function buscarClientes() {
+            // Función para filtrar la tabla
+            function filtrarTabla() {
                 const textoBusqueda = buscarInput.value.toLowerCase().trim();
                 const fechaInicio = fechaInicioInput.value;
                 const fechaFin = fechaFinInput.value;
-                let resultadosVisibles = false;
                 
-                filas.forEach(fila => {
-                    // Evitar procesar fila de "no hay datos"
-                    if (fila.querySelector('.text-muted')) {
-                        return;
-                    }
-                    
+                filasVisibles = todasLasFilas.filter(fila => {
                     const celdas = fila.querySelectorAll('td');
                     const nombreCliente = celdas[0].textContent.toLowerCase();
-                    const fechaCliente = celdas[5].textContent.trim(); // Columna de fecha (ajustada a índice 5)
+                    const fechaCliente = celdas[5].textContent.trim();
                     
                     let coincide = true;
                     
@@ -684,7 +799,7 @@ tbody tr.pagado {
                         if (fechaInicio && fechaFin) {
                             const inicio = new Date(fechaInicio);
                             const fin = new Date(fechaFin);
-                            fin.setHours(23, 59, 59); // Incluir todo el día final
+                            fin.setHours(23, 59, 59);
                             coincide = (fecha >= inicio && fecha <= fin);
                         } else if (fechaInicio) {
                             const inicio = new Date(fechaInicio);
@@ -695,47 +810,219 @@ tbody tr.pagado {
                             coincide = fecha <= fin;
                         }
                     }
-
-                    fila.style.display = coincide ? '' : 'none';
-                    if (coincide) resultadosVisibles = true;
+                    
+                    return coincide;
                 });
                 
-                // Manejar mensaje de no resultados
-                const mensajeExistente = tabla.querySelector('#mensaje-no-resultados');
-                const tbody = tabla.querySelector('tbody');
-                
-                if (!resultadosVisibles && (textoBusqueda !== '' || fechaInicio || fechaFin)) {
-                    if (!mensajeExistente) {
-                        const tr = document.createElement('tr');
-                        tr.id = 'mensaje-no-resultados';
-                        tr.innerHTML = `
-                            <td colspan="7" style="text-align: center;">
-                                <div class="text-muted">
-                                    <i class="fas fa-search fa-3x mb-3"></i>
-                                    <h5>No se encontraron resultados</h5>
-                                    <p>No hay registros que coincidan con los filtros aplicados</p>
-                                </div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    }
-                } else if (mensajeExistente) {
-                    mensajeExistente.remove();
-                }
+                paginaActual = 1;
+                mostrarPagina();
             }
-
+            
+            // Función para ordenar la tabla
+            function ordenarTabla(columna) {
+                const headers = tabla.querySelectorAll('th.sortable');
+                
+                if (ordenActual.columna === columna) {
+                    ordenActual.direccion = ordenActual.direccion === 'asc' ? 'desc' : 'asc';
+                } else {
+                    ordenActual.columna = columna;
+                    ordenActual.direccion = 'asc';
+                }
+                
+                // Actualizar estilos de los encabezados
+                headers.forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                });
+                const headerActual = tabla.querySelector(`th[data-column="${columna}"]`);
+                headerActual.classList.add(ordenActual.direccion === 'asc' ? 'sort-asc' : 'sort-desc');
+                
+                filasVisibles.sort((a, b) => {
+                    let valorA, valorB;
+                    
+                    if (columna === 1) { // Columna Estado
+                        const estadosOrden = { 'pendiente': 0, 'parcial': 1, 'pagado': 2 };
+                        const badgeA = a.querySelectorAll('td')[columna].querySelector('.badge');
+                        const badgeB = b.querySelectorAll('td')[columna].querySelector('.badge');
+                        valorA = estadosOrden[badgeA.classList[1].replace('badge-', '')] || 0;
+                        valorB = estadosOrden[badgeB.classList[1].replace('badge-', '')] || 0;
+                    } else if (columna === 3) { // Columna Total $
+                        valorA = parseFloat(a.querySelectorAll('td')[columna].getAttribute('data-valor'));
+                        valorB = parseFloat(b.querySelectorAll('td')[columna].getAttribute('data-valor'));
+                    } else if (columna === 5) { // Columna Fecha
+                        valorA = normalizarFecha(a.querySelectorAll('td')[columna].textContent);
+                        valorB = normalizarFecha(b.querySelectorAll('td')[columna].textContent);
+                    } else {
+                        valorA = a.querySelectorAll('td')[columna].textContent.toLowerCase();
+                        valorB = b.querySelectorAll('td')[columna].textContent.toLowerCase();
+                    }
+                    
+                    if (valorA < valorB) return ordenActual.direccion === 'asc' ? -1 : 1;
+                    if (valorA > valorB) return ordenActual.direccion === 'asc' ? 1 : -1;
+                    return 0;
+                });
+                
+                mostrarPagina();
+            }
+            
+            // Función para mostrar la página actual
+            function mostrarPagina() {
+                // Ocultar todas las filas
+                todasLasFilas.forEach(fila => fila.style.display = 'none');
+                
+                // Remover mensaje de no resultados si existe
+                const mensajeNoResultados = tbody.querySelector('#mensaje-no-resultados');
+                if (mensajeNoResultados) mensajeNoResultados.remove();
+                
+                if (filasVisibles.length === 0) {
+                    // Mostrar mensaje de no resultados
+                    const tr = document.createElement('tr');
+                    tr.id = 'mensaje-no-resultados';
+                    tr.innerHTML = `
+                        <td colspan="7" style="text-align: center;">
+                            <div class="text-muted">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <h5>No se encontraron resultados</h5>
+                                <p>No hay registros que coincidan con los filtros aplicados</p>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                    paginationButtons.innerHTML = '';
+                    resultsInfo.textContent = 'Mostrando 0 de 0 registros';
+                    return;
+                }
+                
+                const totalPaginas = registrosPorPagina === 'all' ? 1 : Math.ceil(filasVisibles.length / registrosPorPagina);
+                const inicio = registrosPorPagina === 'all' ? 0 : (paginaActual - 1) * registrosPorPagina;
+                const fin = registrosPorPagina === 'all' ? filasVisibles.length : inicio + registrosPorPagina;
+                
+                // Mostrar filas de la página actual
+                for (let i = inicio; i < fin && i < filasVisibles.length; i++) {
+                    filasVisibles[i].style.display = '';
+                }
+                
+                // Actualizar información de resultados
+                resultsInfo.textContent = `Mostrando ${inicio + 1}-${Math.min(fin, filasVisibles.length)} de ${filasVisibles.length} registros`;
+                
+                // Crear botones de paginación
+                crearBotonesPaginacion(totalPaginas);
+            }
+            
+            // Función para crear botones de paginación
+            function crearBotonesPaginacion(totalPaginas) {
+                paginationButtons.innerHTML = '';
+                
+                if (totalPaginas <= 1) return;
+                
+                // Botón anterior
+                const btnAnterior = document.createElement('button');
+                btnAnterior.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                btnAnterior.disabled = paginaActual === 1;
+                btnAnterior.addEventListener('click', () => {
+                    if (paginaActual > 1) {
+                        paginaActual--;
+                        mostrarPagina();
+                    }
+                });
+                paginationButtons.appendChild(btnAnterior);
+                
+                // Botones de páginas
+                let inicio = Math.max(1, paginaActual - 2);
+                let fin = Math.min(totalPaginas, inicio + 4);
+                
+                if (fin - inicio < 4) {
+                    inicio = Math.max(1, fin - 4);
+                }
+                
+                if (inicio > 1) {
+                    const btn1 = document.createElement('button');
+                    btn1.textContent = '1';
+                    btn1.addEventListener('click', () => {
+                        paginaActual = 1;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btn1);
+                    
+                    if (inicio > 2) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationButtons.appendChild(btnDots);
+                    }
+                }
+                
+                for (let i = inicio; i <= fin; i++) {
+                    const btn = document.createElement('button');
+                    btn.textContent = i;
+                    if (i === paginaActual) btn.classList.add('active');
+                    btn.addEventListener('click', () => {
+                        paginaActual = i;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btn);
+                }
+                
+                if (fin < totalPaginas) {
+                    if (fin < totalPaginas - 1) {
+                        const btnDots = document.createElement('button');
+                        btnDots.textContent = '...';
+                        btnDots.disabled = true;
+                        paginationButtons.appendChild(btnDots);
+                    }
+                    
+                    const btnUltima = document.createElement('button');
+                    btnUltima.textContent = totalPaginas;
+                    btnUltima.addEventListener('click', () => {
+                        paginaActual = totalPaginas;
+                        mostrarPagina();
+                    });
+                    paginationButtons.appendChild(btnUltima);
+                }
+                
+                // Botón siguiente
+                const btnSiguiente = document.createElement('button');
+                btnSiguiente.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                btnSiguiente.disabled = paginaActual === totalPaginas;
+                btnSiguiente.addEventListener('click', () => {
+                    if (paginaActual < totalPaginas) {
+                        paginaActual++;
+                        mostrarPagina();
+                    }
+                });
+                paginationButtons.appendChild(btnSiguiente);
+            }
+            
+            // Función para limpiar filtros
             function limpiarFiltros() {
                 buscarInput.value = '';
                 fechaInicioInput.value = '';
                 fechaFinInput.value = '';
-                buscarClientes();
+                filtrarTabla();
             }
-
-            // Eventos
-            buscarInput.addEventListener('input', buscarClientes);
-            fechaInicioInput.addEventListener('change', buscarClientes);
-            fechaFinInput.addEventListener('change', buscarClientes);
+            
+            // Event listeners
+            buscarInput.addEventListener('input', filtrarTabla);
+            fechaInicioInput.addEventListener('change', filtrarTabla);
+            fechaFinInput.addEventListener('change', filtrarTabla);
             btnLimpiar.addEventListener('click', limpiarFiltros);
+            
+            registrosPorPaginaSelect.addEventListener('change', function() {
+                registrosPorPagina = this.value === 'all' ? 'all' : parseInt(this.value);
+                paginaActual = 1;
+                mostrarPagina();
+            });
+            
+            // Agregar eventos de clic a los encabezados ordenables
+            tabla.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function() {
+                    const columna = parseInt(this.getAttribute('data-column'));
+                    ordenarTabla(columna);
+                });
+            });
+            
+            // Inicializar
+            filasVisibles = [...todasLasFilas];
+            mostrarPagina();
         });
     </script>
 </body>

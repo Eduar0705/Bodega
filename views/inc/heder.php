@@ -2,25 +2,25 @@
 <style>
     /* Variables CSS para facilitar el mantenimiento */
     :root {
-        --primary-color: #3498db;
-        --danger-color: #e74c3c;
-        --danger-hover: #c0392b;
-        --sidebar-bg: #2c3e50;
-        --sidebar-hover: #34495e;
-        --text-light: #ecf0f1;
-        --text-dark: #2c3e50;
-        --shadow: 0 2px 5px rgba(0,0,0,0.1);
-        --transition: all 0.3s ease;
+        --color-primario: #3498db;
+        --color-peligro: #e74c3c;
+        --color-peligro-hover: #c0392b;
+        --color-barra-lateral: #2c3e50;
+        --color-barra-lateral-hover: #34495e;
+        --texto-claro: #ecf0f1;
+        --texto-oscuro: #2c3e50;
+        --sombra-base: 0 2px 5px rgba(0,0,0,0.1);
+        --transicion-suave: all 0.3s ease;
     }
 
-    /* Menú Superior */
-    .navbar {
+    /* Barra de Navegación Superior */
+    .barra-navegacion {
         display: flex;
         justify-content: space-between;
         align-items: center;
         background-color: white;
         padding: 0.75rem 1.5rem;
-        box-shadow: var(--shadow);
+        box-shadow: var(--sombra-base);
         position: fixed;
         top: 0;
         left: 0;
@@ -29,64 +29,64 @@
         height: 60px;
     }
 
-    .navbar-left {
+    .seccion-izquierda {
         display: flex;
         align-items: center;
         gap: 1rem;
     }
 
-    .menu-toggle {
+    .boton-menu {
         background: none;
         border: none;
         font-size: 1.25rem;
-        color: var(--text-dark);
+        color: var(--texto-oscuro);
         cursor: pointer;
         padding: 0.5rem;
         border-radius: 4px;
-        transition: var(--transition);
+        transition: var(--transicion-suave);
     }
 
-    .menu-toggle:hover {
+    .boton-menu:hover {
         background-color: #f0f0f0;
     }
 
-    .logo {
+    .logotipo {
         font-size: 1.5rem;
         font-weight: bold;
-        color: var(--primary-color);
+        color: var(--color-primario);
     }
 
-    .navbar-right {
+    .seccion-derecha {
         display: flex;
         align-items: center;
     }
 
-    .user-menu {
+    .contenedor-usuario {
         display: flex;
         align-items: center;
         gap: 1rem;
         position: relative;
     }
 
-    .user-profile {
+    .perfil-usuario {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         cursor: pointer;
         padding: 0.5rem;
         border-radius: 4px;
-        transition: var(--transition);
+        transition: var(--transicion-suave);
     }
 
-    .user-profile:hover {
+    .perfil-usuario:hover {
         background-color: #f0f0f0;
     }
 
-    .user-profile span {
+    .perfil-usuario span {
         font-weight: 500;
     }
 
-    .user-dropdown {
+    .menu-desplegable {
         position: absolute;
         top: 100%;
         right: 0;
@@ -100,29 +100,32 @@
         margin-top: 0.5rem;
     }
 
-    .user-dropdown.active {
+    .menu-desplegable.mostrar {
         display: block;
     }
 
-    .user-dropdown a, button {
+    .menu-desplegable a, 
+    .menu-desplegable button {
         display: flex;
         align-items: center;
         gap: 0.75rem;
         padding: 0.75rem 1rem;
-        color: var(--text-dark);
+        color: var(--texto-oscuro);
         text-decoration: none;
-        transition: var(--transition);
-    }
-
-    .user-dropdown button{
+        transition: var(--transicion-suave);
+        width: 100%;
+        background: none;
         border: none;
+        cursor: pointer;
+        text-align: left;
     }
 
-    .user-dropdown a:hover , button:hover{
+    .menu-desplegable a:hover,
+    .menu-desplegable button:hover {
         background-color: #f5f5f5;
     }
 
-    .exit a {
+    .boton-salir a {
         color: #fff; 
         text-decoration: none; 
         font-size: 14px;
@@ -130,117 +133,115 @@
         align-items: center;
         gap: 8px; 
         padding: 8px 12px;
-        background-color: var(--danger-color); 
+        background-color: var(--color-peligro); 
         border-radius: 4px; 
-        transition: var(--transition); 
+        transition: var(--transicion-suave); 
     }
 
-    .exit a:hover {
-        background-color: var(--danger-hover);
+    .boton-salir a:hover {
+        background-color: var(--color-peligro-hover);
     }
 
-    .fas.fa-sign-out-alt {
-        font-size: 14px;
-    }
-
-    /* Menú Lateral */
-    .sidebar {
+    /* Barra Lateral de Navegación */
+    .barra-lateral {
         position: fixed;
         top: 60px;
         left: 0;
         bottom: 0;
         width: 250px;
-        background-color: var(--sidebar-bg);
-        color: var(--text-light);
-        transition: var(--transition);
+        background-color: var(--color-barra-lateral);
+        color: var(--texto-claro);
+        transition: var(--transicion-suave);
         z-index: 999;
         overflow-y: auto;
     }
 
-    .sidebar.collapsed {
+    .barra-lateral.contraida {
         width: 60px;
     }
 
-    .sidebar.collapsed .sidebar-menu span {
+    .barra-lateral.contraida .navegacion-lateral span {
         display: none;
     }
 
-    .sidebar-menu ul {
+    .navegacion-lateral ul {
         list-style: none;
         padding: 1rem 0;
     }
 
-    .sidebar-menu li {
+    .navegacion-lateral li {
         margin-bottom: 0.25rem;
     }
 
-    .sidebar-menu a {
+    .navegacion-lateral a {
         display: flex;
         align-items: center;
         gap: 1rem;
         padding: 0.75rem 1.5rem;
-        color: var(--text-light);
+        color: var(--texto-claro);
         text-decoration: none;
-        transition: var(--transition);
+        transition: var(--transicion-suave);
     }
 
-    .sidebar-menu a:hover {
-        background-color: var(--sidebar-hover);
+    .navegacion-lateral a:hover {
+        background-color: var(--color-barra-lateral-hover);
     }
 
-    .sidebar-menu a.active {
-        background-color: var(--primary-color);
+    .navegacion-lateral a.activo {
+        background-color: var(--color-primario);
     }
 
-    .sidebar-menu i {
+    .navegacion-lateral i {
         width: 20px;
         text-align: center;
     }
 
-    /* Contenido principal */
-    .main-content {
+    /* Contenido Principal */
+    .contenido-principal {
         margin-left: 250px;
         margin-top: 60px;
         padding: 2rem;
-        transition: var(--transition);
+        transition: var(--transicion-suave);
     }
 
-    .main-content.expanded {
+    .contenido-principal.expandido {
         margin-left: 60px;
     }
 
     /* Responsividad */
     @media (max-width: 768px) {
-        .sidebar {
+        .barra-lateral {
             transform: translateX(-100%);
         }
         
-        .sidebar.active {
+        .barra-lateral.visible {
             transform: translateX(0);
         }
         
-        .main-content {
+        .contenido-principal {
             margin-left: 0;
         }
         
-        .user-profile span {
+        .perfil-usuario span {
             display: none;
         }
         
-        .logo {
+        .logotipo {
             font-size: 1.25rem;
         }
     }
 
-    /* Estilos para el contenido de ejemplo */
-    .content-card {
+    /* Estilos para tarjetas de contenido */
+    .tarjeta-contenido {
         background: white;
         border-radius: 8px;
         padding: 1.5rem;
-        box-shadow: var(--shadow);
+        box-shadow: var(--sombra-base);
         margin-bottom: 1.5rem;
     }
-    .modal {
+
+    /* Modal de Verificación */
+    .ventana-modal {
         display: none;
         position: fixed;
         z-index: 2000;
@@ -251,12 +252,12 @@
         overflow: auto;
         background: rgba(44, 62, 80, 0.35);
         backdrop-filter: blur(2px);
-        transition: var(--transition);
+        transition: var(--transicion-suave);
         align-items: center;
         justify-content: center;
     }
 
-    .modal form {
+    .ventana-modal form {
         background: #fff;
         margin: 8% auto;
         padding: 2rem 2.5rem 1.5rem 2.5rem;
@@ -271,7 +272,7 @@
         border: 1px solid #e0e0e0;
     }
 
-    .close {
+    .boton-cerrar {
         color: #888;
         position: absolute;
         top: 18px;
@@ -283,19 +284,19 @@
         z-index: 10;
     }
 
-    .close:hover {
-        color: var(--danger-color);
+    .boton-cerrar:hover {
+        color: var(--color-peligro);
     }
 
-    #veriFrom label {
+    .formulario-verificacion label {
         display: block;
         margin-bottom: 6px;
         font-weight: 600;
-        color: var(--text-dark);
+        color: var(--texto-oscuro);
         font-size: 15px;
     }
 
-    #clave {
+    .campo-clave {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid #d1d5db;
@@ -306,13 +307,13 @@
         transition: border-color 0.2s;
     }
 
-    #clave:focus {
-        border-color: var(--primary-color);
+    .campo-clave:focus {
+        border-color: var(--color-primario);
         outline: none;
         background: #fff;
     }
 
-    #verif {
+    .boton-verificar {
         background-color: #38d718ff;
         color: white;
         padding: 10px;
@@ -327,42 +328,41 @@
         text-align: center;
     }
 
-    #verif:hover {
+    .boton-verificar:hover {
         background-color: #21bb236c;
         color: #2c3e50;
     }
 
     @media (max-width: 480px) {
-        .modal form {
+        .ventana-modal form {
             padding: 1.2rem 1rem 1rem 1rem;
             max-width: 95vw;
         }
-        .close {
+        .boton-cerrar {
             top: 10px;
             right: 14px;
             font-size: 24px;
         }
     }
-
 </style>
 
-<!-- Menú Superior -->
-<nav class="navbar">
-    <div class="navbar-left">
-        <button class="menu-toggle" id="menuToggle">
+<!-- Barra de Navegación Superior -->
+<nav class="barra-navegacion">
+    <div class="seccion-izquierda">
+        <button class="boton-menu" id="alternadorMenu">
             <i class="fas fa-bars"></i>
         </button>
-        <span class="logo"><?= APP_NAME ?></span>
+        <span class="logotipo"><?= APP_NAME ?></span>
     </div>
-    <div class="navbar-right">
-        <div class="user-menu">
-            <div class="user-profile" id="userProfile">
+    <div class="seccion-derecha">
+        <div class="contenedor-usuario">
+            <div class="perfil-usuario" id="perfilUsuario">
                 <i class="fas fa-user-circle"></i>
                 <span><?= $_SESSION['nombre'] ?></span>
                 <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
             </div>
-            <div class="user-dropdown" id="userDropdown">
-                <button id="abrir" name="abrir" >
+            <div class="menu-desplegable" id="menuDesplegableUsuario">
+                <button id="abrirConfiguracion" name="abrirConfiguracion">
                     <i class="fas fa-cog"></i>
                     <span>Configuración</span>
                 </button>
@@ -374,11 +374,10 @@
         </div>
     </div>
 </nav>
-<!-- href="?action=admin&method=config" -->
 
-<!-- Menú Lateral -->
-<aside class="sidebar" id="sidebar">
-    <div class="sidebar-menu">
+<!-- Barra Lateral de Navegación -->
+<aside class="barra-lateral" id="barraLateral">
+    <div class="navegacion-lateral">
         <ul>
             <li>
                 <a href="?action=admin">
@@ -413,82 +412,85 @@
             <li>
                 <a href="?action=admin&method=users">
                     <i class="fas fa-users"></i>
-                    <span>Usuarios</span>
+                    <span>Clientes</span>
                 </a>
             </li>
             <li>
                 <a href="?action=admin&method=estadisticas">
-                    <i class="fas fa-users"></i>
-                    <span>Edtadisticas</span>
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Estadísticas</span>
                 </a>
             </li>
         </ul>
     </div>
 </aside>
-<div id="verifModal" class="modal">
-    <form action="" method="post" id="veriFrom" autocomplete="off">
-        <span class="close">&times;</span>
+
+<!-- Modal de Verificación -->
+<div id="modalVerificacion" class="ventana-modal">
+    <form action="" method="post" class="formulario-verificacion" id="formularioVerificacion" autocomplete="off">
+        <span class="boton-cerrar">&times;</span>
         <h2>Validación de Clave</h2>
-        <label for="clave">Clave Superior:</label>
+        <label for="campoClaveSeguridad">Clave Superior:</label>
         <div style="position:relative;">
-            <input type="password" name="clave" id="clave" required>
-            <button type="button" id="toggleClave" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">
-                <i class="fas fa-eye" id="eyeIcon"></i>
+            <input type="password" name="clave" id="campoClaveSeguridad" class="campo-clave" required>
+            <button type="button" id="alternadorVisibilidad" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer;">
+                <i class="fas fa-eye" id="iconoOjo"></i>
             </button>
         </div>
-        <button type="submit" name="verif" id="verif">Verificar</button>
+        <button type="submit" name="verificar" id="botonVerificar" class="boton-verificar">Verificar</button>
     </form>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<!-- FUNCION DEL modal -->
+
+<!-- Script para el Modal de Verificación -->
 <script>
-    const modal = document.getElementById('verifModal');
-    const abrir = document.getElementById('abrir');
-    const closeBtn = document.querySelector('.close');
-    const toggleClave = document.getElementById('toggleClave');
-    const claveInput = document.getElementById('clave');
-    const eyeIcon = document.getElementById('eyeIcon');
-    const claveSuper = "<?= addslashes(APP_Password) ?>";
+    const ventanaModal = document.getElementById('modalVerificacion');
+    const btnAbrirConfig = document.getElementById('abrirConfiguracion');
+    const btnCerrarModal = document.querySelector('.boton-cerrar');
+    const btnAlternarVisibilidad = document.getElementById('alternadorVisibilidad');
+    const inputClave = document.getElementById('campoClaveSeguridad');
+    const iconoVisibilidad = document.getElementById('iconoOjo');
+    const claveSeguridad = "<?= addslashes(APP_Password) ?>";
 
     // Abrir modal
-    abrir.addEventListener("click", () => {
-        modal.style.display = "flex";
+    btnAbrirConfig.addEventListener("click", () => {
+        ventanaModal.style.display = "flex";
     });
 
     // Cerrar modal
-    closeBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        claveInput.value = '';
+    btnCerrarModal.addEventListener("click", () => {
+        ventanaModal.style.display = "none";
+        inputClave.value = '';
     });
 
     // Mostrar/ocultar clave
-    toggleClave.addEventListener("click", () => {
-        if (claveInput.type === "password") {
-            claveInput.type = "text";
-            eyeIcon.classList.remove("fa-eye");
-            eyeIcon.classList.add("fa-eye-slash");
+    btnAlternarVisibilidad.addEventListener("click", () => {
+        if (inputClave.type === "password") {
+            inputClave.type = "text";
+            iconoVisibilidad.classList.remove("fa-eye");
+            iconoVisibilidad.classList.add("fa-eye-slash");
         } else {
-            claveInput.type = "password";
-            eyeIcon.classList.remove("fa-eye-slash");
-            eyeIcon.classList.add("fa-eye");
+            inputClave.type = "password";
+            iconoVisibilidad.classList.remove("fa-eye-slash");
+            iconoVisibilidad.classList.add("fa-eye");
         }
     });
 
-    // Cerrar modal al hacer click fuera del formulario
-    window.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.style.display = "none";
+    // Cerrar modal al hacer clic fuera del formulario
+    window.addEventListener("click", (evento) => {
+        if (evento.target === ventanaModal) {
+            ventanaModal.style.display = "none";
         }
     });
 
-    // Verificación de clave y redirige a configuración
-    document.getElementById('veriFrom').addEventListener('submit', function(e){
-        e.preventDefault();
-        if(claveInput.value === claveSuper){
+    // Verificación de clave y redirección a configuración
+    document.getElementById('formularioVerificacion').addEventListener('submit', function(evento){
+        evento.preventDefault();
+        if(inputClave.value === claveSeguridad){
             window.location.href = "?action=admin&method=config";
         } else {
-            modal.style.display = 'none';
+            ventanaModal.style.display = 'none';
             Swal.fire({
                 title: 'ERROR',
                 text: 'Error, la clave ingresada es incorrecta',
@@ -498,58 +500,58 @@
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Volver a intentar',
                 cancelButtonText: 'Cancelar'
-            }).then((resul)=>{
-                if(resul.isConfirmed){
-                    modal.style.display = 'flex';
-                    claveInput.value = '';
+            }).then((resultado) => {
+                if(resultado.isConfirmed){
+                    ventanaModal.style.display = 'flex';
+                    inputClave.value = '';
                 }
-            })
+            });
         }
     });
 </script>
 
-<!-- PARA EL NAV Y EL ASIDE -->
+<!-- Script para Navegación -->
 <script>
-    // Toggle del menú de usuario
-    const userProfile = document.getElementById('userProfile');
-    const userDropdown = document.getElementById('userDropdown');
+    // Alternar menú desplegable de usuario
+    const elementoPerfil = document.getElementById('perfilUsuario');
+    const menuUsuario = document.getElementById('menuDesplegableUsuario');
 
-    userProfile.addEventListener('click', function(e) {
-        e.stopPropagation();
-        userDropdown.classList.toggle('active');
+    elementoPerfil.addEventListener('click', function(evento) {
+        evento.stopPropagation();
+        menuUsuario.classList.toggle('mostrar');
     });
 
-    // Cerrar dropdown al hacer click fuera
-    document.addEventListener('click', function(e) {
-        if (!userProfile.contains(e.target) && !userDropdown.contains(e.target)) {
-            userDropdown.classList.remove('active');
+    // Cerrar menú desplegable al hacer clic fuera
+    document.addEventListener('click', function(evento) {
+        if (!elementoPerfil.contains(evento.target) && !menuUsuario.contains(evento.target)) {
+            menuUsuario.classList.remove('mostrar');
         }
     });
 
-    // Toggle del sidebar
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.querySelector('.main-content');
+    // Alternar barra lateral
+    const botonAlternador = document.getElementById('alternadorMenu');
+    const barraNavegacion = document.getElementById('barraLateral');
+    const contenidoPrincipal = document.querySelector('.contenido-principal');
 
-    menuToggle.addEventListener('click', function() {
-        // Para desktop: colapsar
+    botonAlternador.addEventListener('click', function() {
+        // Para desktop: contraer/expandir
         if (window.innerWidth > 768) {
-            sidebar.classList.toggle('collapsed');
-            if (mainContent) {
-                mainContent.classList.toggle('expanded');
+            barraNavegacion.classList.toggle('contraida');
+            if (contenidoPrincipal) {
+                contenidoPrincipal.classList.toggle('expandido');
             }
         } else {
             // Para móvil: mostrar/ocultar
-            sidebar.classList.toggle('active');
+            barraNavegacion.classList.toggle('visible');
         }
     });
 
-    // Cerrar sidebar en móvil al hacer click en un enlace
-    const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function() {
+    // Cerrar barra lateral en móvil al hacer clic en un enlace
+    const enlacesNavegacion = document.querySelectorAll('.navegacion-lateral a');
+    enlacesNavegacion.forEach(enlace => {
+        enlace.addEventListener('click', function() {
             if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
+                barraNavegacion.classList.remove('visible');
             }
         });
     });

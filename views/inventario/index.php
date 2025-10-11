@@ -169,111 +169,117 @@
             font-size: 14px;
         }
     }
+
     /* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-}
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 5% auto;
-    padding: 25px;
-    border: 1px solid #888;
-    width: 50%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    max-width: 600px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: black;
-}
-
-/* Form Styles */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-.form-group input, 
-.form-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.form-row {
-    display: flex;
-    gap: 15px;
-}
-
-.form-row .form-group {
-    flex: 1;
-}
-
-.input-with-symbol {
-    position: relative;
-}
-
-.input-with-symbol span {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #666;
-}
-
-.submit-btn {
-    background-color: #4CAF50;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    width: 100%;
-    margin-top: 10px;
-}
-
-.submit-btn:hover {
-    background-color: #45a049;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
     .modal-content {
-        width: 90%;
-        margin: 10% auto;
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 25px;
+        border: 1px solid #888;
+        width: 50%;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        max-width: 600px;
     }
-    
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input, 
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
     .form-row {
-        flex-direction: column;
-        gap: 0;
+        display: flex;
+        gap: 15px;
     }
-}
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .input-with-symbol {
+        position: relative;
+    }
+
+    .input-with-symbol input {
+        padding-right: 30px;
+    }
+
+    .input-with-symbol span {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
+    }
+
+    .submit-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 90%;
+            margin: 10% auto;
+        }
+        
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+    }
 </style>
 <body>
     <div class="dashboard">
@@ -299,7 +305,7 @@
                                 <th>Nombre</th>
                                 <th>Presentacion</th>
                                 <th>disponibles</th>
-                                <th>Precion Venta</th>
+                                <th>Precio Venta</th>
                                 <th>Total de Ganancia</th>
                                 <th>Acciones</th>
                             </tr>
@@ -327,7 +333,6 @@
                                             </button>
                                             <button 
                                                 class="btn btn-sm btn-danger btn-eliminar"
-                                                id="btn-eliminar" 
                                                 title="Eliminar solicitud" 
                                                 data-id="<?php echo $dato['id_producto']; ?>">
                                                 <i class="fas fa-trash-alt"></i>
@@ -337,7 +342,7 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8" style="text-align: center;">
+                                    <td colspan="7" style="text-align: center;">
                                         <div class="text-muted">
                                             <i class="fas fa-boxes fa-3x mb-3"></i>
                                             <h5>No hay productos en inventario</h5>
@@ -349,12 +354,13 @@
                         </tbody>
                     </table>
                 </div>
+
                 <!-- Modal de agregar producto -->
                 <div id="productModal" class="modal">
                     <div class="modal-content">
-                        <span class="close">&times;</span>
+                        <span class="close" id="closeAddModal">&times;</span>
                         <h2>Agregar Nuevo Producto</h2>
-                        <form id="productForm"  method="post">
+                        <form id="productForm" method="post">
                             <div class="form-group">
                                 <label for="productCode">Código:</label>
                                 <input type="text" id="productCode" name="productCode" required>
@@ -384,7 +390,7 @@
                                 <div class="form-group">
                                     <label for="profitPercentage">% Ganancia:</label>
                                     <div class="input-with-symbol">
-                                        <input type="number" id="profitPercentage" name="profitPercentage" min="0" value="10" required>
+                                        <input type="number" id="profitPercentage" name="profitPercentage" min="0" step="0.01" value="10" required>
                                         <span>%</span>
                                     </div>
                                 </div>
@@ -395,14 +401,15 @@
                                 </div>
                             </div>
                             
-                            <button type="submit" class="submit-btn" name="add" id="add">Guardar Producto</button>
+                            <button type="submit" class="submit-btn" name="add">Guardar Producto</button>
                         </form>
                     </div>
                 </div>
+
                 <!-- Modal de editar producto -->
                 <div id="editModal" class="modal">
                     <div class="modal-content">
-                        <span class="close">&times;</span>
+                        <span class="close" id="closeEditModal">&times;</span>
                         <h2>Editar Producto</h2>
                         <form id="editForm" method="post" action="?action=admin&method=actualizarProducto">
                             <input type="hidden" id="editId" name="id_producto">
@@ -436,7 +443,7 @@
                                 <div class="form-group">
                                     <label for="editProfitPercentage">% Ganancia:</label>
                                     <div class="input-with-symbol">
-                                        <input type="number" id="editProfitPercentage" name="porcentaje_ganancia" min="0" value="10" required>
+                                        <input type="number" id="editProfitPercentage" name="porcentaje_ganancia" min="0" step="0.01" value="10" required>
                                         <span>%</span>
                                     </div>
                                 </div>
@@ -454,18 +461,20 @@
             </section>
         </main>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <!-- Funcion del modal de agregar -->
+
+    <!-- Funciones del modal de agregar -->
     <script>
-        const modal = document.getElementById("productModal");
-        const addBtn = document.getElementById("add");
-        const closeBtn = document.querySelector(".close");
-        const form = document.getElementById("productForm");
-        const purchasePrice = document.getElementById("purchasePrice");
-        const profitPercentage = document.getElementById("profitPercentage");
-        const salePrice = document.getElementById("salePrice");
+        const modalAgregar = document.getElementById("productModal");
+        const btnAgregar = document.getElementById("add");
+        const btnCerrarAgregar = document.getElementById("closeAddModal");
+        const formAgregar = document.getElementById("productForm");
+        const precioCompraAdd = document.getElementById("purchasePrice");
+        const porcentajeGananciaAdd = document.getElementById("profitPercentage");
+        const precioVentaAdd = document.getElementById("salePrice");
         const codigoProducto = document.getElementById('productCode');
 
         // Config del input de codigo de producto que reciba solo numeros
@@ -473,178 +482,209 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Abrir modal
-        addBtn.addEventListener("click", function() {
-            modal.style.display = "block";
+        // Abrir modal de agregar
+        btnAgregar.addEventListener("click", function() {
+            modalAgregar.style.display = "block";
+            calcularPrecioVentaAdd();
         });
 
-        // Cerrar modal
-        closeBtn.addEventListener("click", function() {
-            modal.style.display = "none";
+        // Cerrar modal de agregar con X
+        btnCerrarAgregar.addEventListener("click", function() {
+            modalAgregar.style.display = "none";
+            formAgregar.reset();
         });
 
+        // Cerrar modal de agregar al hacer clic fuera
         window.addEventListener("click", function(event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
+            if (event.target === modalAgregar) {
+                modalAgregar.style.display = "none";
+                formAgregar.reset();
             }
         });
 
-        // Calculo del porcentaje de Ganancia
-        function calculateSalePrice() {
-            const purchase = parseFloat(purchasePrice.value) || 0;
-            const percentage = parseFloat(profitPercentage.value) || 0;
-            
-            const profit = purchase * (percentage / 100);
-            const sale = purchase + profit;
-            
-            salePrice.value = sale.toFixed(2);
+        // Calculo del precio de venta para agregar
+        function calcularPrecioVentaAdd() {
+            const compra = parseFloat(precioCompraAdd.value) || 0;
+            const porcentaje = parseFloat(porcentajeGananciaAdd.value) || 0;
+            const venta = compra * (1 + (porcentaje / 100));
+            precioVentaAdd.value = venta.toFixed(2);
         }
 
-        purchasePrice.addEventListener("input", calculateSalePrice);
-        profitPercentage.addEventListener("input", calculateSalePrice);
+        precioCompraAdd.addEventListener("input", calcularPrecioVentaAdd);
+        porcentajeGananciaAdd.addEventListener("input", calcularPrecioVentaAdd);
 
-        // Asegúrate de que salePrice tenga valor antes de enviar
-        form.addEventListener("submit", function(e) {
-            calculateSalePrice(); // Recalcula por si acaso
+        // Validación antes de enviar formulario de agregar
+        formAgregar.addEventListener("submit", function(e) {
+            calcularPrecioVentaAdd();
             
-            // Validación básica
-            if (!salePrice.value || salePrice.value <= 0) {
+            if (!precioVentaAdd.value || precioVentaAdd.value <= 0) {
                 e.preventDefault();
-                alert("Por favor calcule un precio de venta válido");
-                return;
+                Swal.fire('Error', 'Por favor calcule un precio de venta válido', 'error');
+                return false;
             }
-            
-            // Si todo está bien, el formulario se enviará normalmente
-            console.log("Enviando formulario...");
         });
+
+        // Función de filtrado
         function filtrarProductos() {
-            // Obtener el valor del input de búsqueda
             let input = document.getElementById('buscar');
             let filtro = input.value.toUpperCase();
-            
-            // Obtener la tabla y las filas
             let tabla = document.getElementById('tablaProductos');
             let filas = tabla.getElementsByTagName('tr');
             
-            // Recorrer todas las filas de la tabla (excepto el encabezado)
             for (let i = 1; i < filas.length; i++) {
                 let mostrarFila = false;
-                
-                // Obtener las celdas de código (primera columna) y nombre (segunda columna)
                 let codigo = filas[i].getElementsByTagName('td')[0];
                 let nombre = filas[i].getElementsByTagName('td')[1];
                 
                 if (codigo && nombre) {
-                    // Comprobar si el código o el nombre coinciden con el filtro
                     let textoCodigo = codigo.textContent || codigo.innerText;
                     let textoNombre = nombre.textContent || nombre.innerText;
                     
-                    if (textoCodigo.toUpperCase().indexOf(filtro) > -1 || textoNombre.toUpperCase().indexOf(filtro) > -1) {
+                    if (textoCodigo.toUpperCase().indexOf(filtro) > -1 || 
+                        textoNombre.toUpperCase().indexOf(filtro) > -1) {
                         mostrarFila = true;
                     }
                 }
                 
-                // Mostrar u ocultar la fila según coincida con el filtro
-                if (mostrarFila) {
-                    filas[i].style.display = '';
-                } else {
-                    filas[i].style.display = 'none';
-                }
+                filas[i].style.display = mostrarFila ? '' : 'none';
             }
         }
     </script>
-    <!-- Eliminar -->
+
+    <!-- Función del modal de editar -->
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.btn-eliminar').forEach(btn => {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault(); // Previene comportamiento por defecto
+        const modalEditar = document.getElementById('editModal');
+        const btnCerrarEditar = document.getElementById('closeEditModal');
+        const formEditar = document.getElementById('editForm');
+        const precioCompraEdit = document.getElementById('editPurchasePrice');
+        const porcentajeGananciaEdit = document.getElementById('editProfitPercentage');
+        const precioVentaEdit = document.getElementById('editSalePrice');
 
-                const id = this.getAttribute('data-id');
+        // Función para calcular precio de venta en edición
+        function calcularPrecioVentaEdit() {
+            const compra = parseFloat(precioCompraEdit.value) || 0;
+            const porcentaje = parseFloat(porcentajeGananciaEdit.value) || 0;
+            const venta = compra * (1 + (porcentaje / 100));
+            precioVentaEdit.value = venta.toFixed(2);
+        }
 
-                Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "Esta acción no se puede deshacer.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Redirige con el ID al método eliminar del controlador
-                        window.location.href = `?action=admin&method=eliminarProducto&id=${id}`;
-                    }
+        // Event listeners para cálculo automático
+        precioCompraEdit.addEventListener('input', calcularPrecioVentaEdit);
+        porcentajeGananciaEdit.addEventListener('input', calcularPrecioVentaEdit);
+
+        // Manejar botones de editar con event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-editar')) {
+                const btn = e.target.closest('.btn-editar');
+                const id = btn.getAttribute('data-id');
+                
+                fetch(`?action=admin&method=obtenerProducto&id=${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.success) {
+                            const producto = data.producto;
+                            
+                            document.getElementById('editId').value = producto.id_producto;
+                            document.getElementById('editCode').value = producto.codigo;
+                            document.getElementById('editName').value = producto.nombre;
+                            document.getElementById('editMeasure').value = producto.medida;
+                            document.getElementById('editStock').value = producto.un_disponibles;
+                            document.getElementById('editPurchasePrice').value = producto.precio_compra;
+                            
+                            const porcentaje = ((producto.precio_venta - producto.precio_compra) / producto.precio_compra) * 100;
+                            document.getElementById('editProfitPercentage').value = porcentaje.toFixed(2);
+                            document.getElementById('editSalePrice').value = producto.precio_venta;
+                            
+                            modalEditar.style.display = 'block';
+                        } else {
+                            Swal.fire('Error', data.message || 'No se pudo cargar el producto', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'No se pudo cargar el producto', 'error');
+                    });
+            }
+        });
+
+        // Cerrar modal de editar con X
+        btnCerrarEditar.addEventListener('click', function() {
+            modalEditar.style.display = 'none';
+            formEditar.reset();
+        });
+
+        // Cerrar modal de editar al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            if (e.target === modalEditar) {
+                modalEditar.style.display = 'none';
+                formEditar.reset();
+            }
+        });
+
+        // Cerrar modales con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (modalEditar.style.display === 'block') {
+                    modalEditar.style.display = 'none';
+                    formEditar.reset();
+                }
+                if (modalAgregar.style.display === 'block') {
+                    modalAgregar.style.display = 'none';
+                    formAgregar.reset();
+                }
+            }
+        });
+
+        // Validación antes de enviar formulario de editar
+        formEditar.addEventListener('submit', function(e) {
+            const compra = parseFloat(precioCompraEdit.value);
+            const venta = parseFloat(precioVentaEdit.value);
+            
+            if (venta <= compra) {
+                e.preventDefault();
+                Swal.fire('Advertencia', 'El precio de venta debe ser mayor al precio de compra', 'warning');
+                return false;
+            }
+        });
+    </script>
+
+    <!-- Función de eliminar -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-id');
+
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "Esta acción no se puede deshacer.",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = `?action=admin&method=eliminarProducto&id=${id}`;
+                        }
+                    });
                 });
             });
         });
-    });
     </script>
-    <!-- Funcion del modal de editar -->
-    <script>
-    // Manejo del modal de edición
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.getAttribute('data-id');
-            
-            // Fetch para obtener los datos del producto
-            fetch(`?action=admin&method=obtenerProducto&id=${id}`)
-                .then(response => response.json())
-                .then(data => {
-                    if(data.success) {
-                        const producto = data.producto;
-                        
-                        // Llenar el formulario con los datos
-                        document.getElementById('editId').value = producto.id_producto;
-                        document.getElementById('editCode').value = producto.codigo;
-                        document.getElementById('editName').value = producto.nombre;
-                        document.getElementById('editMeasure').value = producto.medida;
-                        document.getElementById('editStock').value = producto.un_disponibles;
-                        document.getElementById('editPurchasePrice').value = producto.precio_compra;
-                        
-                        // Calcular porcentaje de ganancia si es necesario
-                        const porcentaje = ((producto.precio_venta - producto.precio_compra) / producto.precio_compra) * 100;
-                        document.getElementById('editProfitPercentage').value = porcentaje.toFixed(2);
-                        document.getElementById('editSalePrice').value = producto.precio_venta;
-                        
-                        // Mostrar el modal
-                        document.getElementById('editModal').style.display = 'block';
-                    } else {
-                        Swal.fire('Error', data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire('Error', 'No se pudo cargar el producto', 'error');
-                });
-        });
-    });
 
-    // Cálculo automático del precio de venta (similar al de agregar)
-    document.getElementById('editProfitPercentage').addEventListener('input', function() {
-        calcularPrecioVenta('edit');
-    });
-
-    function calcularPrecioVenta(prefix) {
-        const precioCompra = parseFloat(document.getElementById(`${prefix}PurchasePrice`).value) || 0;
-        const porcentaje = parseFloat(document.getElementById(`${prefix}ProfitPercentage`).value) || 0;
-        const precioVenta = precioCompra * (1 + (porcentaje / 100));
-        document.getElementById(`${prefix}SalePrice`).value = precioVenta.toFixed(2);
-    }
-    </script>
     <!-- Exportar a PDF -->
     <script>
         document.getElementById('importar').addEventListener('click', function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'pt', 'a4');
             
-            // Título del documento
             const title = "Reporte del Inventario";
             doc.setFontSize(18);
             doc.text(title, 40, 40);
             
-            // Obtener datos de la tabla
             const table = document.getElementById('tablaProductos');
             const headers = [];
             const rows = [];
@@ -655,7 +695,6 @@
                 }
             });
             
-            // Obtener filas de datos
             table.querySelectorAll('tbody tr').forEach(tr => {
                 if(tr.querySelector('td[colspan]')) return;
                 
