@@ -114,6 +114,17 @@ function crearBaseDeDatos() {
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
 
+            // Tabla proveedores
+            "DROP TABLE IF EXISTS `proveedores`",
+            "CREATE TABLE `proveedores` (
+                `id_proveedor` int NOT NULL AUTO_INCREMENT,
+                `nombre` varchar(100) NOT NULL,
+                `email` varchar(100) NOT NULL,
+                `telefono` varchar(100) NOT NULL,
+                `direccion` varchar(255) NOT NULL,
+                PRIMARY KEY (`id_proveedor`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci",
+
             // Tabla inventario
             "DROP TABLE IF EXISTS `inventario`",
             "CREATE TABLE `inventario` (
@@ -136,7 +147,6 @@ function crearBaseDeDatos() {
             }
         }
 
-        // Insertar datos básicos
         // Insertar datos en admin (clave del 1 al 8)
         $conn->query("INSERT INTO `admin` (`id`, `claveSuper`, `NombreAPP`, `precio_dollar`) VALUES (1, '12345678', 'App', 0.00)");
 

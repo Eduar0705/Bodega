@@ -416,6 +416,12 @@
                 </a>
             </li>
             <li>
+                <a href="?action=admin&method=proveedores">
+                    <i class="fas fa-truck"></i>
+                    <span>Proveedores</span>
+                </a>
+            </li>
+            <li>
                 <a href="?action=admin&method=estadisticas">
                     <i class="fas fa-chart-bar"></i>
                     <span>Estadísticas</span>

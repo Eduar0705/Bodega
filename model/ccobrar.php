@@ -45,6 +45,17 @@ class Ccobrar{
         return $cuenta;
     }
 
+    public function deletePagadas() {
+        $sql = "DELETE FROM cuentascobrar WHERE tipo_venta = 'pagado' or total_usd <= 0";
+        $result = $this->bd->query($sql);
+        if ($result) {
+            return $this->bd->affected_rows;
+        } else {
+            error_log("Error al eliminar cuentas pagadas: " . $this->bd->error);
+            return false;
+        }
+    }
+
     public function descontarMonto($id, $monto){
         // Iniciar transacción
         $this->bd->begin_transaction();
@@ -116,16 +127,14 @@ class Ccobrar{
             
             // Confirmar transacción
             $this->bd->commit();
-            
             error_log("✓ Descuento exitoso - ID: $id, Monto: $monto, Nuevo total: $nuevo_total");
-            
             return true;
             
         } catch (Exception $e) {
             // Revertir cambios en caso de error
             $this->bd->rollback();
             error_log("✗ Error en descontarMonto: " . $e->getMessage());
-            throw $e; // Re-lanzar la excepción para que el controlador la capture
+            throw $e;
         }
     }
 }

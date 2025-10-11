@@ -330,7 +330,7 @@ class AdminController
             }
             
             // Ejecutar descuento
-            $resultado = $this->ccobrar->descontarMonto($id_historial, $monto);
+            $resultado = $this->ccobrar->descontarMonto($id_historial, $monto) && $this->ccobrar->deletePagadas();
             
             if (!$resultado) {
                 throw new Exception('Error al procesar el descuento en la base de datos');
@@ -552,7 +552,6 @@ class AdminController
         require_once 'views/conf/index.php';
     }
 
-    // Actualizar nombre de la aplicación
     public function cambiarNombreApp() {
         $this->iniciarSesion();
         if(isset($_POST['nombre_app'])) {
@@ -584,5 +583,11 @@ class AdminController
             header('Location: ?action=admin&method=config');
             exit();
         }
+    }
+
+    //Funciones de Proveedores
+    public function proveedores(){
+        $titulo = 'Proveedores';
+        require_once 'views/provedor/index.php';
     }
 }
