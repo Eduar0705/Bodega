@@ -59,6 +59,25 @@ class Inicio
     {
         $_SESSION['nombre'] = $datosUsuario['nombre'];
     }
+
+    public function obtenerNombreUsuario($nombre)
+    {
+        $consulta = "SELECT nombre FROM inf_usuarios WHERE nombre = ?";
+        $stmt = mysqli_prepare($this->db, $consulta);
+
+        if (!$stmt) {
+            error_log("Error preparando consulta: " . mysqli_error($this->db));
+            return null;
+        }
+
+        mysqli_stmt_bind_param($stmt, "s", $nombre);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $usuario = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+
+        return $usuario['nombre'] ?? null;
+    }
     private function redirigirSegunRol($idCargo)
     {
         switch ($idCargo) {

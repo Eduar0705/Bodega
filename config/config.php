@@ -25,7 +25,7 @@ function obtenerDatos(){
             mysqli_free_result($resul);
         }
     } catch (Exception $e) {
-        // Si hay error, simplemente usa los valores por defecto
+        error_log("Error al obtener datos de configuración: " . $e->getMessage());
     }
     
     return $config;

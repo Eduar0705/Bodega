@@ -11,7 +11,6 @@ require_once 'model/proveedores.php';
 
 class AdminController 
 {
-    private $modeloDB;
     private $bdatos;
     private $inventario;
     private $pos;
@@ -40,8 +39,42 @@ class AdminController
     }
     private function validarSesion()
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         if (!isset($_SESSION['nombre'])) {
-            header("Location: ?action=login");
+            echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+            echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Acceso denegado",
+                        text: "Por favor, inicie sesión para continuar.",
+                        confirmButtonColor: "#e74c3c"
+                    }).then(() => {
+                        window.location.href = "./";
+                    });
+                });
+            </script>';
+            exit();
+        }
+        // Verificar si el usuario existe en la base de datos
+        $usuario = $this->bdatos->obtenerNombreUsuario($_SESSION['nombre']);
+        if (!$usuario) {
+            echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+            echo '<script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Usuario no existe",
+                        text: "El usuario actual ha sido eliminado. Por favor, inicie sesión con otro usuario.",
+                        confirmButtonColor: "#e74c3c"
+                    }).then(() => {
+                        window.location.href = "./";
+                    });
+                });
+            </script>';
+            session_destroy();
             exit();
         }
     }
@@ -65,6 +98,7 @@ class AdminController
 
     //FUNCIONES DEL INVETARIO
     public function inventario() {
+        $this->validarSesion();
         $titulo = 'Inventario';
         $datosInven = $this->inventario->obtenerDatos();
 
@@ -162,6 +196,7 @@ class AdminController
     //FUNCIONES DEL PUNTO DE VENTA
 
     public function punto(){
+        $this->validarSesion();
         $titulo = 'Punto de venta';
         $datos = $this->pos->obtenerDatos();
         $clientes = $this->clientes->obtenerUsuarios();
@@ -238,6 +273,7 @@ class AdminController
 
     //Funciones de Historial de ventas
     public function historial(){
+        $this->validarSesion();
         $titulo = 'Historial de venta';
         $historial = $this->historial->obtenerHistorial();
         require_once 'views/historial/index.php';
@@ -245,6 +281,7 @@ class AdminController
 
     //Funciones de cuestas por cobrar o fiados
     public function cuentas(){
+        $this->validarSesion();
         $titulo = 'Cuentas por cobrar';
         $cuentas = $this->ccobrar->obtenerCC();
         require_once 'views/cuentas/index.php';
@@ -369,6 +406,7 @@ class AdminController
 
     // Función de Clientes
     public function users(){
+        $this->validarSesion();
         $titulo = 'Clientes';
         $Clientes = $this->clientes->obtenerUsuarios();
 
@@ -481,12 +519,14 @@ class AdminController
 
     //Funciones de estadisticas
     public function estadisticas(){
+        $this->validarSesion();
         $titulo = 'Estadisticas';
         require_once 'views/estadisticas/index.php';
     }
 
     //Funcion de configuracion
     public function config(){
+        $this->validarSesion();
         $titulo = 'Configuracion';
         $usuarios = $this->config->mostrarUsuarios();
         
@@ -589,6 +629,7 @@ class AdminController
 
     //Funciones de Proveedores
     public function proveedores(){
+        $this->iniciarSesion();
         $titulo = 'Proveedores';
         $proveedores = $this->proveedores->obtenerProveedores();
         require_once 'views/provedor/index.php';
