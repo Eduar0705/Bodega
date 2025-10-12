@@ -10,6 +10,16 @@
     <link rel="stylesheet" href="public/css/admin.css">
     <link rel="stylesheet" href="public/css/proveedores.css">
 </head>
+<style>
+    .phone-link {
+    text-decoration: none;
+    color: inherit;
+    }
+
+    .phone-link:hover {
+    text-decoration: underline;
+    }
+</style>
 <body>
     <div class="dashboard">
         <?php include_once 'views/inc/heder.php' ?>
@@ -63,7 +73,11 @@
                                 <tr data-status="<?= htmlspecialchars($proveedor['estado']) ?>">
                                     <td><?= htmlspecialchars($proveedor['nombre_proveedor']) ?></td>
                                     <td><?= htmlspecialchars($proveedor['email']) ?></td>
-                                    <td><?= htmlspecialchars($proveedor['telefono']) ?></td>
+                                    <td>
+                                        <a href="https://wa.me/<?= $proveedor['telefono'] ?>" target="_blank" class="phone-link">
+                                            <?= htmlspecialchars($proveedor['telefono']) ?>
+                                        </a>
+                                    </td>
                                     <td><?= htmlspecialchars($proveedor['nombre_encargado']) ?></td>
                                     <td>
                                         <span class="status-badge status-<?= strtolower($proveedor['estado']) ?>">
@@ -71,10 +85,10 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn-edit" onclick="editProvider(<?= $proveedor['id_proveedor'] ?>)">
+                                        <button class="edit action-btn" onclick="editProvider(<?= $proveedor['id_proveedor'] ?>)">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button onclick="deleteProvider(<?php echo $proveedor['id_proveedor']; ?>)" class="btn btn-danger">
+                                        <button class="delete action-btn" onclick="deleteProvider(<?= $proveedor['id_proveedor'] ?>)">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
@@ -165,11 +179,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Variable global para almacenar proveedores
         let providers = <?= json_encode($proveedores ?? []) ?>;
 
         // Inicializar la aplicación
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('Proveedores cargados:', providers);
             updateEmptyState();
         });
 
@@ -213,6 +227,11 @@
             }
         }
 
+        // Editar proveedor
+        function editProvider(providerId) {
+            openModal('edit', providerId);
+        }
+
         // Abrir modal
         function openModal(mode, providerId = null) {
             const modal = document.getElementById('providerModal');
@@ -226,18 +245,29 @@
                 document.getElementById('providerId').value = '';
             } else if (mode === 'edit' && providerId) {
                 modalTitle.textContent = 'Editar Proveedor';
+                
                 // Buscar proveedor en los datos de PHP
                 const provider = providers.find(p => p.id_proveedor == providerId);
                 
                 if (provider) {
+                    console.log('Proveedor encontrado:', provider);
+                    
                     document.getElementById('providerId').value = provider.id_proveedor;
-                    document.getElementById('providerName').value = provider.nombre;
-                    document.getElementById('providerEmail').value = provider.email;
-                    document.getElementById('providerPhone').value = provider.telefono;
-                    document.getElementById('providerContact').value = provider.nombre_encargado;
-                    document.getElementById('providerStatus').value = provider.estado;
+                    document.getElementById('providerName').value = provider.nombre_proveedor || '';
+                    document.getElementById('providerEmail').value = provider.email || '';
+                    document.getElementById('providerPhone').value = provider.telefono || '';
+                    document.getElementById('providerContact').value = provider.nombre_encargado || '';
+                    document.getElementById('providerStatus').value = provider.estado || 'Activo';
                     document.getElementById('providerAddress').value = provider.direccion || '';
                     document.getElementById('providerNotes').value = provider.nota || '';
+                } else {
+                    console.error('Proveedor no encontrado con ID:', providerId);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo cargar la información del proveedor'
+                    });
+                    return;
                 }
             }
             
@@ -271,25 +301,39 @@
                 if (providerId) {
                     // Editar proveedor existente
                     formData.append('id', providerId);
-                    response = await fetch('proveedores/actualizar', {
+                    response = await fetch('?action=admin&method=updateProveedor', {
                         method: 'POST',
                         body: formData
                     });
                 } else {
                     // Agregar nuevo proveedor
-                    response = await fetch('proveedores/agregar', {
+                    response = await fetch('?action=admin&method=addProveedor', {
                         method: 'POST',
                         body: formData
                     });
                 }
                 
+                // Verificar si la respuesta es JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Respuesta no JSON:', text);
+                    throw new Error('El servidor no devolvió una respuesta JSON válida');
+                }
+                
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification(providerId ? 'Proveedor actualizado correctamente' : 'Proveedor agregado correctamente');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: providerId ? 'Proveedor actualizado correctamente' : 'Proveedor agregado correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                     closeModal();
                     // Recargar la página para ver los cambios
-                    setTimeout(() => window.location.reload(), 1000);
+                    setTimeout(() => window.location.reload(), 2000);
                 } else {
                     throw new Error(result.message || 'Error al guardar el proveedor');
                 }
@@ -305,53 +349,74 @@
         }
 
         // Eliminar proveedor
-        async function deleteProvider(id) {
-            const result = await Swal.fire({
-                title: '¿Estás seguro?',
-                text: "Esta acción no se puede deshacer",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            });
-            
-            if (result.isConfirmed) {
-                try {
-                    const response = await fetch(`?action=admin&method=eliminarProveedor&id=${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: `id=${id}`
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Eliminado',
-                            text: 'Proveedor eliminado correctamente',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        throw new Error(result.message || 'Error al eliminar el proveedor');
+    async function deleteProvider(id) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+        
+        if (result.isConfirmed) {
+            try {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Eliminando...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                    
-                } catch (error) {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: error.message || 'Error al eliminar el proveedor'
-                    });
+                });
+                
+                const response = await fetch(`?action=admin&method=eliminarProveedor&id=${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `id=${id}`
+                });
+                
+                // Obtener el texto de la respuesta primero
+                const responseText = await response.text();
+                console.log('Respuesta del servidor:', responseText);
+                
+                // Intentar parsear como JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    console.error('Error parseando JSON:', e);
+                    console.error('Respuesta recibida:', responseText);
+                    throw new Error('El servidor no devolvió una respuesta JSON válida. Revisa la consola para más detalles.');
                 }
+                
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Eliminado',
+                        text: 'Proveedor eliminado correctamente',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    throw new Error(result.message || 'Error al eliminar el proveedor');
+                }
+                
+            } catch (error) {
+                console.error('Error completo:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error al eliminar el proveedor'
+                });
             }
         }
+    }
 
         // Mostrar notificación
         function showNotification(message) {
@@ -373,6 +438,13 @@
             }
         });
 
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
         // Estilos CSS para los badges de estado
         const style = document.createElement('style');
         style.textContent = `
@@ -390,6 +462,21 @@
             .status-inactivo {
                 background: #fee2e2;
                 color: #991b1b;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            }
+            .modal.active {
+                display: flex;
             }
         `;
         document.head.appendChild(style);

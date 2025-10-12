@@ -32,7 +32,7 @@ class Proveedores{
     }
 
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedores (nombre, email, telefono, direccion, nombre_encargado, estado, nota) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO proveedores (nombre_proveedor, email, telefono, direccion, nombre_encargado, estado, nota) VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -41,7 +41,7 @@ class Proveedores{
         }
         
         $stmt->bind_param("sssssss", 
-            $data['nombre'],
+            $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
@@ -51,13 +51,18 @@ class Proveedores{
         );
         
         $resultado = $stmt->execute();
+        
+        if (!$resultado) {
+            error_log("Error ejecutando inserción: " . $stmt->error);
+        }
+        
         $stmt->close();
         
         return $resultado;
     }
 
     public function actualizarProveedor($id, $data) {
-        $query = "UPDATE proveedores SET nombre = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
+        $query = "UPDATE proveedores SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -66,7 +71,7 @@ class Proveedores{
         }
         
         $stmt->bind_param("sssssssi", 
-            $data['nombre'],
+            $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
@@ -77,6 +82,11 @@ class Proveedores{
         );
         
         $resultado = $stmt->execute();
+        
+        if (!$resultado) {
+            error_log("Error ejecutando actualización: " . $stmt->error);
+        }
+        
         $stmt->close();
         
         return $resultado;
