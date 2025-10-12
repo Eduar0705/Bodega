@@ -4,7 +4,7 @@ include_once './model/conexion.php';
 function obtenerDatos(){
     // Valores por defecto
     $config = [
-        'NombreApp' => 'Mi Bodega',
+        'NombreApp' => 'APP',
         'Clave' => 'admin123',
         'precio_dollar' => '1.00'
     ];
