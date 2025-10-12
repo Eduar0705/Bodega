@@ -6,10 +6,20 @@ class BaseDatos {
         $root = "root";
         $pass = "";
         $bd = "bodega";
-        $conexion = mysqli_connect($host, $root, $pass, $bd);
+        
+        // Conectar especificando la base de datos
+        $conexion = @mysqli_connect($host, $root, $pass, $bd);
+        
+        // Si falla la conexión (BD no existe o error), conectar sin BD
         if (!$conexion) {
-            die("Error de conexión: " . mysqli_connect_error());
+            $conexion = @mysqli_connect($host, $root, $pass);
+            
+            // Si aún así falla, retornar null o false
+            if (!$conexion) {
+                return null;
+            }
         }
+        
         return $conexion;
     }
 }
