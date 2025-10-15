@@ -26,10 +26,10 @@ class Usuarios {
             return [];
         }
     }
-
-    public function agregarUsuario($nombre, $cedula, $telefono){
+    public function verificarCliente($cedula): bool
+    {
         try {
-            // Verificar si la cédula ya existe
+        // Verificar si la cédula ya existe
             $sqlCheck = "SELECT id_cliente FROM clientes WHERE cedula = ?";
             $stmtCheck = $this->db->prepare($sqlCheck);
             
@@ -37,14 +37,24 @@ class Usuarios {
                 $stmtCheck->bind_param("s", $cedula);
                 $stmtCheck->execute();
                 $result = $stmtCheck->get_result();
-                
                 if ($result->num_rows > 0) {
                     error_log("La cédula ya existe en la base de datos");
                     return false;
-                }
+                } 
+                return $result;  
             }
-
-            // Insertar nuevo cliente
+            else
+            {
+                error_log("Error en prepare: " . $stmtCheck->error);
+            }
+            } catch (Exception $e) {
+            error_log("Error al agregar usuario: " . $e->getMessage());
+            return false;
+            }
+    }
+    public function agregarUsuario($nombre, $cedula, $telefono){
+        try {
+            $this->verificarCliente( $cedula);
             $sql = "INSERT INTO clientes (nombre_apellido, cedula, telefono) VALUES (?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             
@@ -55,7 +65,6 @@ class Usuarios {
                 if (!$resultado) {
                     error_log("Error al ejecutar insert: " . $stmt->error);
                 }
-                
                 return $resultado;
             } else {
                 error_log("Error al preparar statement: " . $this->db->error);

@@ -29,17 +29,17 @@ class Inicio
 
             // Consulta preparada para prevenir inyección SQL
             $consulta = "SELECT * FROM inf_usuarios WHERE cedula = ? AND clave = ?";
-            $stmt = mysqli_prepare($this->db, $consulta);
+            $stmt = $this->db->prepare($consulta);
             
             if (!$stmt) {
-                throw new Exception("Error preparando consulta: " . mysqli_error($this->db));
+                throw new Exception("Error preparando consulta: " . ($this->db->error));
             }
 
-            mysqli_stmt_bind_param($stmt, "ss", $usuario, $password);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
+            $stmt->bind_param("ss", $usuario, $password);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-            if ($fila = mysqli_fetch_array($result)) {
+            if ($fila = $result->fetch_array()) {
                 $this->establecerSesionUsuario($fila);
                 $this->redirigirSegunRol($fila['id_cargo']);
             } else {
@@ -47,7 +47,7 @@ class Inicio
                 exit();
             }
 
-            mysqli_stmt_close($stmt);
+            $stmt->close();
             
         } catch (Exception $e) {
             error_log("Error en loginAuthenticate: " . $e->getMessage());
@@ -63,18 +63,18 @@ class Inicio
     public function obtenerNombreUsuario($nombre)
     {
         $consulta = "SELECT nombre FROM inf_usuarios WHERE nombre = ?";
-        $stmt = mysqli_prepare($this->db, $consulta);
+        $stmt = $this->db->prepare($consulta);
 
         if (!$stmt) {
-            error_log("Error preparando consulta: " . mysqli_error($this->db));
+            error_log("Error preparando consulta: " . ($this->db->error));
             return null;
         }
 
-        mysqli_stmt_bind_param($stmt, "s", $nombre);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $usuario = mysqli_fetch_assoc($result);
-        mysqli_stmt_close($stmt);
+        $stmt->bind_param("s", $nombre);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $usuario = $result->fetch_assoc();
+        $stmt->close();
 
         return $usuario['nombre'] ?? null;
     }

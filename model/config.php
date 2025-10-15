@@ -94,15 +94,8 @@ class Config {
         }
     }
 
-    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo) {
-        // Validaciones básicas
-        if (!preg_match('/^[0-9]{7,10}$/', $cedula)) {
-            return [
-                'success' => false,
-                'message' => 'Cédula inválida. Debe contener entre 7 y 10 dígitos numéricos.'
-            ];
-        }
-
+    public function verificarUsuario($cedula)
+    {
         // Verificar si la cédula ya existe
         $sqlCheck = "SELECT id FROM inf_usuarios WHERE cedula = ?";
         $stmtCheck = $this->db->prepare($sqlCheck);
@@ -118,7 +111,20 @@ class Config {
             ];
         }
         $stmtCheck->close();
-
+    }
+    public function addUsuario($cedula, $nombre, $clave_usuario, $id_cargo) {
+        // Validaciones básicas
+        if (!preg_match('/^[0-9]{7,10}$/', $cedula)) {
+            return [
+                'success' => false,
+                'message' => 'Cédula inválida. Debe contener entre 7 y 10 dígitos numéricos.'
+            ];
+        }
+        $verificacion = $this->verificarUsuario($cedula);
+        if (is_array($verificacion))
+        {
+            return $verificacion;
+        }
         // Insertar nuevo usuario
         $sql = "INSERT INTO inf_usuarios (cedula, nombre, clave, id_cargo) VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);

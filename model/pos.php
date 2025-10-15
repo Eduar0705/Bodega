@@ -52,11 +52,8 @@ class Pos {
     }
 
     // Procesar venta
-    public function procesarVenta($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos) {
-        try {
-            $this->db->begin_transaction();
-            
-            // 1. Validar stock
+    public function validarStock($productos)
+    {
             foreach ($productos as $prod) {
                 if (!isset($prod['id']) || !isset($prod['cantidad'])) {
                     throw new Exception('Datos de producto incompletos');
@@ -77,12 +74,10 @@ class Pos {
                     throw new Exception("Stock insuficiente para: {$row['nombre']}");
                 }
             }
-            
-            // 2. Convertir productos a JSON
-            $productos_json = json_encode($productos, JSON_UNESCAPED_UNICODE);
-            
-            // 3. Insertar en historial
-            $sqlHistorial = "INSERT INTO historial (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) VALUES (?, ?, ?, ?, ?, ?)";
+    }
+    public function insertarHistorial($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json)
+    {
+        $sqlHistorial = "INSERT INTO historial (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtHistorial = $this->db->prepare($sqlHistorial);
             
             if (!$stmtHistorial) {
@@ -96,9 +91,11 @@ class Pos {
             }
             
             $venta_id = $this->db->insert_id;
-            
-            // 4. Si es crédito, insertar en cuentascobrar
-            if ($tipo_pago === 'credito') {
+            return $venta_id;
+    }
+    public function insertarCreditoXCobrar($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json)
+    {
+        if ($tipo_pago === 'credito') {
                 $sqlCredito = "INSERT INTO cuentascobrar (fecha, cliente, tipo_pago, tipo_venta, total_usd, productos_vendidos) VALUES (?, ?, ?, ?, ?, ?)";
                 $stmtCredito = $this->db->prepare($sqlCredito);
                 
@@ -112,30 +109,48 @@ class Pos {
                     throw new Exception("Error al registrar crédito: " . $stmtCredito->error);
                 }
             }
+    }
+    public function actualizarInventario($productos)
+    {
+        $sqlUpdate = "UPDATE inventario SET un_disponibles = un_disponibles - ? WHERE id_producto = ?";
+        $stmtUpdate = $this->db->prepare($sqlUpdate);
             
+        if (!$stmtUpdate) {
+            throw new Exception("Error preparando actualización inventario: " . $this->db->error);
+        }
+            
+        foreach ($productos as $prod) {
+            $stmtUpdate->bind_param('ii', $prod['cantidad'], $prod['id']);
+                
+            if (!$stmtUpdate->execute()) {
+                throw new Exception("Error actualizando inventario: " . $stmtUpdate->error);
+            }
+                
+            if ($stmtUpdate->affected_rows === 0) {
+                throw new Exception("Producto ID {$prod['id']} no se actualizó");
+            }
+        }      
+    }
+    public function procesarVenta($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos) {
+        try {
+            $this->db->begin_transaction();
+            // 1. Validar stock
+            $this->validarStock($productos);
+
+            // 2. Convertir productos a JSON
+            $productos_json = json_encode($productos, JSON_UNESCAPED_UNICODE);
+
+            // 3. Insertar en historial
+            $venta_id = $this->insertarHistorial($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
+
+            // 4. Si es crédito, insertar en cuentascobrar
+            $this->insertarCreditoXCobrar($fecha, $cliente, $tipo_pago, $tipo_venta, $total_usd, $productos_json);
+
             // 5. Actualizar inventario
-            $sqlUpdate = "UPDATE inventario SET un_disponibles = un_disponibles - ? WHERE id_producto = ?";
-            $stmtUpdate = $this->db->prepare($sqlUpdate);
-            
-            if (!$stmtUpdate) {
-                throw new Exception("Error preparando actualización inventario: " . $this->db->error);
-            }
-            
-            foreach ($productos as $prod) {
-                $stmtUpdate->bind_param('ii', $prod['cantidad'], $prod['id']);
-                
-                if (!$stmtUpdate->execute()) {
-                    throw new Exception("Error actualizando inventario: " . $stmtUpdate->error);
-                }
-                
-                if ($stmtUpdate->affected_rows === 0) {
-                    throw new Exception("Producto ID {$prod['id']} no se actualizó");
-                }
-            }
-            
+            $this->actualizarInventario($productos);
+
             // 6. Confirmar transacción
             $this->db->commit();
-            
             return [
                 'success' => true, 
                 'venta_id' => $venta_id,
