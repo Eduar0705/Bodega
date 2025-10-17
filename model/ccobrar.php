@@ -49,7 +49,7 @@ class Ccobrar{
         $sql = "DELETE FROM cuentascobrar WHERE tipo_venta = 'pagado' or total_usd <= 0";
         $result = $this->bd->query($sql);
         if ($result) {
-            return $this->bd->affected_rows;
+            return true;
         } else {
             error_log("Error al eliminar cuentas pagadas: " . $this->bd->error);
             return false;
