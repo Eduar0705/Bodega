@@ -82,10 +82,4 @@ class AdminController
 
         require_once 'views/home/admin.php';
     }
-    //Funciones de estadisticas
-    public function estadisticas(){
-        $this->validarSesion();
-        $titulo = 'Estadisticas';
-        require_once 'views/estadisticas/index.php';
-    }
 }

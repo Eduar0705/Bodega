@@ -422,7 +422,7 @@
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=estadisticas">
+                <a href="?action=reporte&method=home">
                     <i class="fas fa-chart-bar"></i>
                     <span>Estadísticas</span>
                 </a>
