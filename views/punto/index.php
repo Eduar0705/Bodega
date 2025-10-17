@@ -958,7 +958,7 @@
             
             console.log('Enviando:', ventaData);
             
-            return fetch('?action=admin&method=confirmarVenta', {
+            return fetch('?action=pos&method=confirmarVenta', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

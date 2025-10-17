@@ -325,7 +325,9 @@ tbody tr:hover {
                 <!-- Sección de filtros -->
                 <div class="filter-section">
                     <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
+                        Desde:
                     <input type="date" name="fechaInicio" id="fechaInicio" placeholder="Fecha Inicio">
+                        Hasta:
                     <input type="date" name="fechaFin" id="fechaFin" placeholder="Fecha Fin">
                     <button class="btn-limpiar" id="btn-limpiar">
                         <i class="fas fa-times"></i> Limpiar

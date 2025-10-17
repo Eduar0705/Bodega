@@ -40,8 +40,8 @@ class Usuarios {
                 if ($result->num_rows > 0) {
                     error_log("La cédula ya existe en la base de datos");
                     return false;
-                } 
-                return $result;  
+                }
+                return true;  
             }
             else
             {

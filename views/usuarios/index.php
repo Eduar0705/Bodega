@@ -657,7 +657,7 @@ tbody tr:last-child td:last-child {
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 // Realizar la eliminación por AJAX
-                                fetch(`?action=admin&method=DeleteCliente&id=${id}`)
+                                fetch(`?action=cliente&method=deleteCliente&id=${id}`)
                                     .then(response => response.ok ? response.text() : Promise.reject())
                                     .then(() => {
                                         Swal.fire({

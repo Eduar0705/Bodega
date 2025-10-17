@@ -93,7 +93,7 @@
                     <span>La clave maestra es utilizada para acciones críticas del sistema. Guárdala en un lugar seguro.</span>
                 </div>
 
-                <form class="config-form" id="formClaveMaestra" method="POST" action="?action=admin&method=config" autocomplete="off">
+                <form class="config-form" id="formClaveMaestra" method="POST" action="?action=config&method=cambiarClave" autocomplete="off">
                     <div class="form-group">
                         <label for="clave_actual">
                             Clave Maestra Actual<span class="required">*</span>
@@ -141,7 +141,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" name="cambiar_clave">
+                    <button type="submit" name="bandera_cambiar_clave">
                         <i class="fas fa-check-circle"></i> Actualizar Clave Maestra
                     </button>
                 </form>
@@ -156,7 +156,7 @@
                     <span>Este nombre aparecerá en el título y encabezado de todas las páginas.</span>
                 </div>
 
-                <form class="config-form" id="formNombreApp" method="POST" action="?action=admin&method=cambiarNombreApp" autocomplete="off">
+                <form class="config-form" id="formNombreApp" method="POST" action="?action=config&method=cambiarNombreApp" autocomplete="off">
                     <div class="form-group">
                         <label for="nombre_app">
                             Nombre de la Aplicación<span class="required">*</span>
@@ -186,7 +186,7 @@
                     <span>Los nuevos usuarios serán creados con cargo de usuario estándar por defecto.</span>
                 </div>
 
-                <form class="config-form" id="formAgregarUsuario" method="POST" action="?action=admin&method=config" autocomplete="off">
+                <form class="config-form" id="formAgregarUsuario" method="POST" action="?action=config&method=agregarUsuario" autocomplete="off">
                     <div class="form-group">
                         <label for="cedula">
                             Cédula<span class="required">*</span>
@@ -214,7 +214,7 @@
                         </div>
                     </div>
                     <input type="hidden" name="id_cargo" value="1">
-                    <button type="submit" name="agregar_usuario">
+                    <button type="submit" name="bandera_agregar_usuario">
                         <i class="fas fa-user-plus"></i> Agregar Usuario
                     </button>
                 </form>
@@ -284,19 +284,13 @@
                     // Enviar el formulario por POST para eliminar el usuario
                     const form = document.createElement('form');
                     form.method = 'POST';
-                    form.action = '?action=admin&method=config';
+                    form.action = '?action=config&method=eliminarUsuario';
 
                     const inputId = document.createElement('input');
                     inputId.type = 'hidden';
                     inputId.name = 'id_usuario';
                     inputId.value = id;
                     form.appendChild(inputId);
-
-                    const inputEliminar = document.createElement('input');
-                    inputEliminar.type = 'hidden';
-                    inputEliminar.name = 'eliminar_usuario';
-                    inputEliminar.value = '1';
-                    form.appendChild(inputEliminar);
 
                     document.body.appendChild(form);
                     form.submit();

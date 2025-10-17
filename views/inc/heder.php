@@ -386,31 +386,31 @@
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=inventario">
+                <a href="?action=inventario&method=home">
                     <i class="fas fa-boxes"></i>
                     <span>Inventario</span>
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=punto">
+                <a href="?action=pos&method=home">
                     <i class="fas fa-cash-register"></i>
                     <span>Punto de venta</span>
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=historial">
+                <a href="?action=historial&method=home">
                     <i class="fas fa-history"></i>
                     <span>Historial</span>
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=cuentas">
+                <a href="?action=cuentas&method=home">
                     <i class="fas fa-file-invoice-dollar"></i>
                     <span>Cuentas por cobrar</span>
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=users">
+                <a href="?action=cliente&method=users">
                     <i class="fas fa-users"></i>
                     <span>Clientes</span>
                 </a>
@@ -494,7 +494,7 @@
     document.getElementById('formularioVerificacion').addEventListener('submit', function(evento){
         evento.preventDefault();
         if(inputClave.value === claveSeguridad){
-            window.location.href = "?action=admin&method=config";
+            window.location.href = "?action=config&method=home";
         } else {
             ventanaModal.style.display = 'none';
             Swal.fire({

@@ -411,7 +411,7 @@
                     <div class="modal-content">
                         <span class="close" id="closeEditModal">&times;</span>
                         <h2>Editar Producto</h2>
-                        <form id="editForm" method="post" action="?action=admin&method=actualizarProducto">
+                        <form id="editForm" method="post" action="?action=inventario&method=actualizarProducto">
                             <input type="hidden" id="editId" name="id_producto">
                             
                             <div class="form-group">
@@ -578,7 +578,7 @@
                 const btn = e.target.closest('.btn-editar');
                 const id = btn.getAttribute('data-id');
                 
-                fetch(`?action=admin&method=obtenerProducto&id=${id}`)
+                fetch(`?action=inventario&method=obtenerProducto&id=${id}`)
                     .then(response => response.json())
                     .then(data => {
                         if(data.success) {
@@ -667,7 +667,7 @@
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = `?action=admin&method=eliminarProducto&id=${id}`;
+                            window.location.href = `?action=inventario&method=eliminarProducto&id=${id}`;
                         }
                     });
                 });

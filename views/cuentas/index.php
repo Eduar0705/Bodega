@@ -674,10 +674,10 @@ tbody tr.pagado {
                         };
                         
                         console.log('=== ENVIANDO SOLICITUD ===');
-                        console.log('URL:', '?action=admin&method=descontarMonto');
+                        console.log('URL:', '?action=cuentas&method=descontarMonto');
                         console.log('Datos:', datosEnvio);
                         
-                        return fetch('?action=admin&method=descontarMonto', {
+                        return fetch('?action=cuentas&method=descontarMonto', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
