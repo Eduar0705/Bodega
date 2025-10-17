@@ -416,7 +416,7 @@
                 </a>
             </li>
             <li>
-                <a href="?action=admin&method=proveedores">
+                <a href="?action=proveedor&method=home">
                     <i class="fas fa-truck"></i>
                     <span>Proveedores</span>
                 </a>

@@ -301,13 +301,13 @@
                 if (providerId) {
                     // Editar proveedor existente
                     formData.append('id', providerId);
-                    response = await fetch('?action=admin&method=updateProveedor', {
+                    response = await fetch('?action=proveedor&method=updateProveedor', {
                         method: 'POST',
                         body: formData
                     });
                 } else {
                     // Agregar nuevo proveedor
-                    response = await fetch('?action=admin&method=addProveedor', {
+                    response = await fetch('?action=proveedor&method=addProveedor', {
                         method: 'POST',
                         body: formData
                     });
@@ -372,7 +372,7 @@
                     }
                 });
                 
-                const response = await fetch(`?action=admin&method=eliminarProveedor&id=${id}`, {
+                const response = await fetch(`?action=proveedor&method=eliminarProveedor&id=${id}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
