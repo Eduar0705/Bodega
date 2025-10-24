@@ -219,11 +219,11 @@ tbody tr:last-child td:last-child {
 }
 
 /* Estilos para los botones */
-.btn-delete {
+.btn-delete, .btn-edit {
     background: #d41c1cff;
     color: white;
     border: none;
-    padding: 10px 14px;
+    padding: 5px 7px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
@@ -231,12 +231,21 @@ tbody tr:last-child td:last-child {
     box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
 }
 
+.btn-edit{
+    background-color: #e6e635ff;
+}
+
 .btn-delete:hover {
     background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
-.btn-delete:active {
+.btn-edit:hover {
+    background: linear-gradient(135deg, #c09d2bff 0%, #f9ff3eff 100%);
+    box-shadow: 0 4px 12px rgba(231, 220, 60, 0.4);
+}
+
+.btn-delete:active, .btn-edit:active {
     transform: translateY(0);
 }
 
@@ -427,8 +436,14 @@ tbody tr:last-child td:last-child {
                                         <td><?php echo htmlspecialchars($info['cedula']); ?></td>
                                         <td><?php echo htmlspecialchars($info['telefono']); ?></td>
                                         <td>
+                                            <button
+                                            class="btn btn-edit"
+                                            title="Editar Cliente"
+                                            data-id="<?php echo $info['id_cliente']; ?>">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
                                             <button 
-                                                class="btn btn-sm btn-danger btn-delete"
+                                                class="btn btn-delete"
                                                 title="Eliminar cliente" 
                                                 data-id="<?php echo $info['id_cliente']; ?>">
                                                 <i class="fas fa-trash-alt"></i>

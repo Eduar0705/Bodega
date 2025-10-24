@@ -118,7 +118,7 @@ function crearBaseDeDatos($datosIniciales) {
             "DROP TABLE IF EXISTS `proveedores`",
             "CREATE TABLE `proveedores` (
                 `id_proveedor` int NOT NULL AUTO_INCREMENT,
-                `nombre` varchar(100) NOT NULL,
+                `nombre_proveedor` varchar(100) NOT NULL,
                 `email` varchar(100) NOT NULL,
                 `telefono` varchar(100) NOT NULL,
                 `direccion` varchar(255) NOT NULL,

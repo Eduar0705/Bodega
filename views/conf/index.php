@@ -15,7 +15,7 @@
         }
         
         /* Estilos para el botón eliminar */
-        .btn-eliminar {
+        .btn-eliminar, .btn-editar {
             background-color: #e74c3c;
             color: white;
             border: none;
@@ -29,27 +29,36 @@
             gap: 5px;
         }
         
+        .btn-editar {
+            background-color: #eaea36ff;
+        }
+        
         .btn-eliminar:hover {
             background-color: #c0392b;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
         }
+        .btn-editar:hover {
+            background-color: #d4d434ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(234, 234, 54, 0.3);
+        }
         
-        .btn-eliminar:active {
+        .btn-eliminar:active, .btn-editar:active {
             transform: translateY(0);
         }
         
-        .btn-eliminar i {
+        .btn-eliminar i, .btn-editar i {
             font-size: 12px;
         }
         
-        .btn-eliminar:disabled {
+        .btn-eliminar:disabled, .btn-editar:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
             opacity: 0.6;
         }
         
-        .btn-eliminar:disabled:hover {
+        .btn-eliminar:disabled:hover, .btn-editar:disabled:hover {
             transform: none;
             box-shadow: none;
         }
@@ -221,7 +230,7 @@
             </section>
 
             <!-- Sección: Lista de Usuarios -->
-            <section class="mostrar-usuarios">
+            <section class="config-section">
                 <h3><i class="fas fa-users"></i> Lista de Usuarios</h3>
                 <table>
                     <thead>
@@ -242,13 +251,16 @@
                                     <td><?= htmlspecialchars($usuario['nombre']) ?></td>
                                     <td><?= $usuario['id_cargo'] == 1 ? 'Administrador' : 'Usuario' ?></td>
                                     <td>
+                                        <button class="btn-editar" onclick="editarUsuario(<?= $usuario['id'] ?>)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
                                         <?php if(isset($_SESSION['cedula']) && $_SESSION['cedula'] == $usuario['cedula']): ?>
                                             <button class="btn-eliminar" disabled title="No puedes eliminar tu propia cuenta">
-                                                <i class="fas fa-trash"></i> Eliminar
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         <?php else: ?>
                                             <button class="btn-eliminar" onclick="eliminarUsuario(<?= $usuario['id'] ?>, '<?= htmlspecialchars($usuario['nombre']) ?>')">
-                                                <i class="fas fa-trash"></i> Eliminar
+                                                <i class="fas fa-trash"></i> 
                                             </button>
                                         <?php endif; ?>
                                     </td>

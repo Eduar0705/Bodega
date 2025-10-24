@@ -692,7 +692,7 @@ class AdminController
             }
 
             // Validar campos requeridos (usando el nombre del formulario 'nombre')
-            $requiredFields = ['nombre', 'email', 'telefono', 'nombre_encargado', 'estado'];
+            $requiredFields = ['nombre', 'email', 'telefono', 'nombre_encargado', 'estado', 'rif'];
             foreach ($requiredFields as $field) {
                 if (empty($_POST[$field])) {
                     throw new Exception("El campo {$field} es requerido");
@@ -707,7 +707,8 @@ class AdminController
                 'nombre_encargado' => trim($_POST['nombre_encargado']),
                 'estado' => trim($_POST['estado']),
                 'direccion' => isset($_POST['direccion']) ? trim($_POST['direccion']) : '',
-                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : ''
+                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : '',
+                'rif' => trim($_POST['rif'])
             ];
 
             // Validar formato de email
@@ -756,13 +757,14 @@ class AdminController
             
             $id = intval($_POST['id']);
             $data = [
-                'nombre_proveedor' => trim($_POST['nombre']), // ✅ Del form 'nombre' a DB 'nombre_proveedor'
+                'nombre_proveedor' => trim($_POST['nombre']), 
                 'email' => filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL),
                 'telefono' => trim($_POST['telefono']),
                 'nombre_encargado' => trim($_POST['nombre_encargado']),
                 'estado' => trim($_POST['estado']),
                 'direccion' => isset($_POST['direccion']) ? trim($_POST['direccion']) : '',
-                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : ''
+                'nota' => isset($_POST['nota']) ? trim($_POST['nota']) : '',
+                'rif' => trim($_POST['rif'])
             ];
             
             if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
@@ -786,6 +788,6 @@ class AdminController
                 'message' => $e->getMessage()
             ]);
         }
-        exit; // ✅ Importante: detener la ejecución
+        exit; 
     }
 }

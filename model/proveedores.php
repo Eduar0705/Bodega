@@ -32,7 +32,7 @@ class Proveedores{
     }
 
     public function agregarProveedor($data) {
-        $query = "INSERT INTO proveedores (nombre_proveedor, email, telefono, direccion, nombre_encargado, estado, nota) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $query = "INSERT INTO proveedores (nombre_proveedor, email, telefono, direccion, nombre_encargado, estado, nota, rif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
@@ -40,14 +40,15 @@ class Proveedores{
             return false;
         }
         
-        $stmt->bind_param("sssssss", 
+        $stmt->bind_param("ssssssss", 
             $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
             $data['direccion'],
             $data['nombre_encargado'],
             $data['estado'],
-            $data['nota']
+            $data['nota'],
+            $data['rif'],
         );
         
         $resultado = $stmt->execute();
@@ -62,15 +63,15 @@ class Proveedores{
     }
 
     public function actualizarProveedor($id, $data) {
-        $query = "UPDATE proveedores SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ? WHERE id_proveedor = ?";
+        $query = "UPDATE proveedores SET nombre_proveedor = ?, email = ?, telefono = ?, direccion = ?, nombre_encargado = ?, estado = ?, nota = ?, rif = ? WHERE id_proveedor = ?";
         $stmt = $this->db->prepare($query);
         
         if (!$stmt) {
             error_log("Error preparando consulta: " . $this->db->error);
             return false;
         }
-        
-        $stmt->bind_param("sssssssi", 
+
+        $stmt->bind_param("ssssssssi", 
             $data['nombre_proveedor'],
             $data['email'],
             $data['telefono'],
@@ -78,6 +79,7 @@ class Proveedores{
             $data['nombre_encargado'],
             $data['estado'],
             $data['nota'],
+            $data['rif'],
             $id
         );
         

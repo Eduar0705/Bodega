@@ -60,6 +60,7 @@
                     <thead>
                         <tr>
                             <th>Proveedor</th>
+                            <th>RIF</th>
                             <th>Email</th>
                             <th>Teléfono</th>
                             <th>Encargado</th>
@@ -72,6 +73,7 @@
                             <?php foreach($proveedores as $proveedor): ?>
                                 <tr data-status="<?= htmlspecialchars($proveedor['estado']) ?>">
                                     <td><?= htmlspecialchars($proveedor['nombre_proveedor']) ?></td>
+                                    <td><?= htmlspecialchars($proveedor['rif']) ?></td>
                                     <td><?= htmlspecialchars($proveedor['email']) ?></td>
                                     <td>
                                         <a href="https://wa.me/<?= $proveedor['telefono'] ?>" target="_blank" class="phone-link">
@@ -156,6 +158,11 @@
                             <option value="Activo">Activo</option>
                             <option value="Inactivo">Inactivo</option>
                         </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="providerRif">RIF *</label>
+                        <input type="text" id="providerRif" name="rif" required placeholder="J-12345678-9">
                     </div>
 
                     <div class="form-group full-width">
@@ -295,6 +302,7 @@
             formData.append('estado', document.getElementById('providerStatus').value);
             formData.append('direccion', document.getElementById('providerAddress').value);
             formData.append('nota', document.getElementById('providerNotes').value);
+            formData.append('rif', document.getElementById('providerRif').value);
             
             try {
                 let response;

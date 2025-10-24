@@ -338,7 +338,7 @@ tbody tr.pagado {
                 
                 <!-- Filtros -->
                 <div class="filter-section">
-                    <input type="text" id="buscar" name="buscar" placeholder="🔍 Buscar por nombre" class="search-input">
+                    <input type="text" id="buscar" name="buscar" placeholder="Buscar por nombre" class="search-input">
                     <input type="date" name="fechaInicio" id="fechaInicio" title="Fecha desde">
                     <input type="date" name="fechaFin" id="fechaFin" title="Fecha hasta">
                     <button class="btn-limpiar" id="btn-limpiar">
