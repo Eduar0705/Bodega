@@ -8,6 +8,7 @@ require_once 'model/usuarios.php';
 require_once 'model/historial.php';
 require_once 'model/ccobrar.php';
 require_once 'model/proveedores.php';
+require_once 'model/estadisticas.php';
 
 class AdminController 
 {
@@ -19,6 +20,7 @@ class AdminController
     private $historial;
     private $ccobrar;
     private $proveedores;
+    private $estadisticas;
     public function __construct() 
     {
         $this->iniciarSesion();
@@ -30,6 +32,7 @@ class AdminController
         $this->historial = new Historial();
         $this->ccobrar = new Ccobrar();
         $this->proveedores = new Proveedores();
+        $this->estadisticas = new Estadisticas();
     }
     private function iniciarSesion()
     {
@@ -520,8 +523,29 @@ class AdminController
     //Funciones de estadisticas
     public function estadisticas(){
         $this->validarSesion();
-        $titulo = 'Estadisticas';
+        $titulo = 'Estadísticas';
+        
+        // Obtener todos los datos
+        $estadisticas = $this->estadisticas->obtenerEstadisticasGenerales();
+        $ventasMensuales = $this->estadisticas->obtenerVentasMensuales();
+        $distribucionProductos = $this->estadisticas->obtenerDistribucionProductos();
+        $actividadReciente = $this->estadisticas->obtenerActividadReciente();
+        $topProductos = $this->estadisticas->obtenerTopProductos();
+        $clientesActivos = $this->estadisticas->obtenerClientesActivos();
+        
         require_once 'views/estadisticas/index.php';
+    }
+
+    public function actualizarDatos() {
+        header('Content-Type: application/json');
+        
+        $estadisticasModel = new Estadisticas();
+        
+        echo json_encode([
+            'estadisticas' => $estadisticasModel->obtenerEstadisticasGenerales(),
+            'ventasMensuales' => $estadisticasModel->obtenerVentasMensuales(),
+            'actividadReciente' => $estadisticasModel->obtenerActividadReciente(5)
+        ]);
     }
 
     //Funcion de configuracion
