@@ -372,11 +372,14 @@ class AdminController
             }
             
             // Ejecutar descuento
-            $resultado = $this->ccobrar->descontarMonto($id_historial, $monto) && $this->ccobrar->deletePagadas();
+            $resultado = $this->ccobrar->descontarMonto($id_historial, $monto);
             
             if (!$resultado) {
                 throw new Exception('Error al procesar el descuento en la base de datos');
             }
+
+            // Limpiar cuentas pagadas (no afecta el resultado de la operación principal)
+            $this->ccobrar->deletePagadas();
             
             $nuevo_total = round($total_actual - $monto, 2);
             if ($nuevo_total < 0) $nuevo_total = 0;
